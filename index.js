@@ -1,14 +1,15 @@
 const express = require("express");
 const app = express();
+const fs = require("fs");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.use(express.static(__dirname + "/"));
 
 app.get("/", function (request, response) {
-    response.statusCode = 200;
-    response.setHeader("Content-Type", "text/plain");
-    response.end("Hola Mundo!");
+    var contenido = fs.readFileSync(__dirname + "/clnt/index.html");
+    response.setHeader("Content-type", "text/html");
+    response.send(contenido);
 });
 
 app.listen(PORT, () => {
