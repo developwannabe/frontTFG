@@ -22,16 +22,13 @@
         <link href="./clnt/animate.min.css" rel="stylesheet">
     </head>
     <body onload="ini();">
-        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 45%"></div>
-          </div>
         <div id="msg"></div>
         <div id="au" class="flex"></div>
         <script>
             function ini() {
                 cw = new ControlWeb();
                 cr = new ClienteRest();
-                //cw.comprobarSesion();
+                cw.init();
             }
         </script>
     </body>
