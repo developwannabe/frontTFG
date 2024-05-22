@@ -1,7 +1,7 @@
 function ClienteRest(){
     //this.url = 'http://localhost:3000';
-    this.url = "https://fronttfg-iwr6ji5k5a-ew.a.run.app/"
-    
+    this.url = "https://fronttfg-iwr6ji5k5a-ew.a.run.app"
+
     this.iniciarSesion = function (email, password) {
         console.log(email, password)
         $.ajax({
