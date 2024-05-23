@@ -1,12 +1,12 @@
 {
   "name": "front",
   "version": "1.0.0",
-  "description": "TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project.",
+  "description": "FrontEnd TFG.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "concurrently \"npx tailwindcss -i ./styles.css -o ./clnt/styles.css --watch\" \"nodemon index.js\"",
     "build:css": "npx tailwindcss -i ./styles.css -o ./clnt/styles.css"
   },
   "keywords": [],
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "animate.css": "^4.1.1",
+    "concurrently": "^8.2.2",
     "flowbite": "^2.3.0",
     "nodemon": "^3.1.0",
     "tailwindcss": "^3.4.3"

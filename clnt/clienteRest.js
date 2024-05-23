@@ -7,13 +7,11 @@ function ClienteRest(){
     }
 
     this.iniciarSesion = function (email, password) {
-        console.log(email, password)
         $.ajax({
             type: "POST",
             url: this.url + "/iniciarSesion",
             data: JSON.stringify({ email: email, password: password }),
             success: function (data) {
-                console.log(data)
                 if (data.email && data.tkn) {
                     $.cookie("email", data.email);
                     $.cookie("tkn", data.tkn);
