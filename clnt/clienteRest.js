@@ -24,6 +24,44 @@ function ClienteRest(){
             contentType: "application/json",
         });
     }
+
+    this.eliminarUsuario = function(email, tkn, callback){
+        $.ajax({
+            type: "DELETE",
+            url: this.url + "/usuario",
+            data: JSON.stringify({ email: email}),
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
+
+    this.editarUsuario = function(datos, tkn, callback){
+        $.ajax({
+            type: "PATCH",
+            url: this.url + "/usuario",
+            data: JSON.stringify(datos),
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
     
     this.iniciarSesion = function (email, password) {
         $.ajax({
@@ -42,9 +80,6 @@ function ClienteRest(){
                                 "Las credenciales introducidas son incorrectas.",
                                 "error"
                             );
-                            break;
-                        case -2:
-                            cw.reenviarCorreo(email);
                             break;
                     }
                 }
