@@ -19,38 +19,11 @@ function ControlWeb() {
                     location.reload();
                 });
                 $("#centerContent").load("./clnt/usuarios.html", function () {
+                    obtenerUsuarios("");
                     $("#table-search").on(
                         "input",
-                        debounce(function () {
-                            var query = $(this).val();
-                            cr.buscarUsuarios(
-                                query,
-                                $.cookie("tkn"),
-                                function (data) {
-                                    $("#datosUsuarios").empty();
-                                    data.forEach((usuario) => {
-                                        $("#datosUsuarios").append(`<tr class="bg-white dark:bg-gray-800">
-                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                ${usuario.nombre}
-                                            </th>
-                                            <td class="px-6 py-4">
-                                                ${usuario.apellidos}
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                ${usuario.email}
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                ${usuario.rol}
-                                            </td>
-                                            <td class="px-6 py-4 text-right">
-                                                <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                            </td>
-                                        </tr>
-                                `);
-                                    });
-                                }
-                            );
-                        }, 300)
+                        debounce(() => obtenerUsuarios($("#table-search").val()), 300)
+
                     );
                 });
             });
@@ -63,6 +36,36 @@ function ControlWeb() {
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(this, args), wait);
         };
+    }
+
+    function obtenerUsuarios (query) {
+        cr.buscarUsuarios(
+            query,
+            $.cookie("tkn"),
+            function (data) {
+                $("#datosUsuarios").empty();
+                data.forEach((usuario) => {
+                    $("#datosUsuarios").append(`<tr class="bg-white dark:bg-gray-800">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            ${usuario.nombre}
+                        </th>
+                        <td class="px-6 py-4">
+                            ${usuario.apellidos}
+                        </td>
+                        <td class="px-6 py-4">
+                            ${usuario.email}
+                        </td>
+                        <td class="px-6 py-4">
+                            ${usuario.rol}
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        </td>
+                    </tr>
+            `);
+                });
+            }
+        );
     }
 
     this.tabUsuarios = function () {
