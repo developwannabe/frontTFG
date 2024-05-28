@@ -6,6 +6,25 @@ function ClienteRest(){
         this.url = "https://backtfg-iwr6ji5k5a-ew.a.run.app";
     }
 
+    this.buscarUsuarios = function (email, tkn, callback) {
+        $.ajax({
+            type: "POST",
+            url: this.url + "/buscarUsuarios",
+            data: JSON.stringify({ email: email}),
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback(data.usuarios);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
+    
     this.iniciarSesion = function (email, password) {
         $.ajax({
             type: "POST",
