@@ -91,4 +91,23 @@ function ClienteRest(){
             contentType: "application/json",
         });
     };
+
+    this.registrarUsuario = function(datos, tkn, callback){
+        $.ajax({
+            type: "POST",
+            url: this.url + "/registrarUsuario",
+            data: JSON.stringify(datos),
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
 }

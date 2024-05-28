@@ -27,6 +27,9 @@ function ControlWeb() {
                             300
                         )
                     );
+                    $("#añadirUsuario").click(function () {
+                        registrarUsuario();
+                    });
                 });
             });
         }
@@ -38,6 +41,114 @@ function ControlWeb() {
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(this, args), wait);
         };
+    }
+
+    function registrarUsuario(){
+        $("#modal").empty();
+        $("#modal").append(`
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="relative p-4 w-full max-w-md max-h-full">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <!-- Modal header -->
+                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            Nuevo Usuario
+                        </h3>
+                        <button id="closeButton" type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                            </svg>
+                            <span class="sr-only">Close modal</span>
+                        </button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="p-4 md:p-5">
+                        <form class="space-y-4" action="#">
+                        <div>
+                            <label for="nombreUsuario" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
+                            <input type="text" id="nombreUsuario" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Pepe" required />
+                        </div>
+                        <div>
+                            <label for="apellidosUsuario" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Apellidos</label>
+                            <input type="text" id="apellidosUsuario" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Viyuela" required />
+                        </div>
+                        <div class="mb-6">
+                            <label for="emailUser" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                            <input type="email" id="emailUser" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="pepe.viyuela@its.com" required />
+                        </div> 
+                        <label for="roles" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rol</label>
+                        <select id="roles" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                          <option value="admin">Administración</option>
+                          <option value="evaluador">Equipo Evaluador</option>
+                          <option value="personal">Personal de Emergencias</option>
+                        </select>
+                        <div>
+                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cambiar contraseña:</label>
+                            <input id="passwordUsuario" type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
+                        </div>   
+                        <button disabled id="crearButton" type="submit" class="w-full text-white bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-not-allowed" disabled>Registrar Usuario</button>
+                        </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `);
+        $("#closeButton").click(function () {
+            $("#modal").hide();
+        });
+
+        $("#nombreUsuario, #apellidosUsuario, #emailUsuario, #passwordUsuario, #roles, #emailUser").on("input", function () {
+            const nombreActual = $("#nombreUsuario").val();
+            const apellidosActual = $("#apellidosUsuario").val();
+            const passwordActual = $("#passwordUsuario").val();
+            const emailActual = $("#emailUser").val();
+            const rolActual = $("#roles").val();
+        
+            if (
+                nombreActual !== "" &&
+                apellidosActual !== "" &&
+                passwordActual !== "" &&
+                rolActual !== "" &&
+                emailActual !== ""
+            ) {
+                $("#crearButton")
+                    .prop("disabled", false)
+                    .removeClass("cursor-not-allowed bg-gray-400 hover:bg-gray-500")
+                    .addClass("bg-blue-600 hover:bg-blue-700");
+            } else {
+                $("#crearButton")
+                    .prop("disabled", true)
+                    .addClass("cursor-not-allowed bg-gray-400 hover:bg-gray-500")
+                    .removeClass("bg-blue-600 hover:bg-blue-700");
+            }
+        });
+        
+        $("#crearButton").click(function (event) {
+            event.preventDefault();
+            let datos = {};
+            if($("#passwordUsuario").val() !== ""){
+                datos["password"] = $("#passwordUsuario").val();
+            }
+            if($("#nombreUsuario").val() !== ""){
+                datos["nombre"] = $("#nombreUsuario").val();
+            }
+            if($("#apellidosUsuario").val() !== ""){
+                datos["apellidos"] = $("#apellidosUsuario").val();
+            }
+            if($("#roles").val() !== ""){
+                datos["rol"] = $("#roles").val();
+            }
+            if($("#emailUser").val() !== ""){
+                datos["email"] = $("#emailUser").val();
+            }
+            cr.registrarUsuario(datos, $.cookie("tkn"), function () {
+                obtenerUsuarios("");
+                $("#modal").hide();
+            });
+        });
+        $("#modal").show();
     }
 
     function obtenerUsuarios(query) {
