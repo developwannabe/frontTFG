@@ -6,11 +6,11 @@ function ClienteRest(){
         this.url = "https://backtfg-iwr6ji5k5a-ew.a.run.app";
     }
 
-    this.buscarUsuarios = function (email, tkn, callback) {
+    this.buscarUsuarios = function (input, tkn, callback) {
         $.ajax({
             type: "POST",
             url: this.url + "/buscarUsuarios",
-            data: JSON.stringify({ email: email}),
+            data: JSON.stringify({ input: input}),
             headers: {
                 'Authorization': 'Bearer ' + tkn
             },
