@@ -60,26 +60,39 @@ function ControlWeb() {
     };
 
     this.evaluar = function () {
-        cr.iniciarEvaluacion($.cookie("tkn"), function (data) {
             $("#centerContent").load("./clnt/eval/eval1.html", function () {
                 $("#startEval").click(function () {
-                    cw.evaluar2();
+                    cr.iniciarEvaluacion($.cookie("tkn"), $.cookie("evalSession"),function (data) {
+                        cw.evaluar2(data.transiciones);
+                    });
                 });
+            });
+    };
+
+    this.evaluar2 = function (data) {
+        let tran = [];
+        data.forEach((element) => {
+            tran.push(element.replace("info4",""))
+        });
+        console.log(data);
+        console.log(tran);
+        $("#centerContent").load("./clnt/eval/eval2.html", function () {
+            cr.evaluarTransicion($.cookie("tkn"), $.cookie("evalSession"), tran[0], function (trn) {
+                cw.tarjetaEval({transicion:tran[0], flood:trn.flood, objects:trn.objects});
+                for(let i = 1; i < tran.length; i++){
+                    cr.evaluarTransicion($.cookie("tkn"), $.cookie("evalSession"), tran[i], function (trn2) {
+                        cw.tarjetaEval({transicion:tran[i], flood:trn2.flood, objects:trn2.objects});
+                    });
+                }
             });
         });
     };
 
-    this.evaluar2 = function () {
-        $("#centerContent").load("./clnt/eval/eval2.html", function () {
-            cr.obtenerTransiciones($.cookie("tkn"), function(data){
-                //cr.iniciarEvaluacion(data, $.cookie("tkn"));
-                cw.tarjetaEval({transicion:"A1A2", flood:60, objects:3});
-            })
-        });
-    };
+    this.evalImg = function (data) {
+
+    }
 
     this.tarjetaEval = function(datosEval) {
-        $("#tarjetaEval").empty();
         $("#tarjetaEval").append(`
         <div class="dui_card w-fit bg-base-150 shadow-xl self-center">
         <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${datosEval.transicion}</h3>
@@ -88,7 +101,7 @@ function ControlWeb() {
                 <img alt="daisy" src="http://localhost:3000/img/${datosEval.transicion}.jpg" />
               </div>
               <div class="dui_diff-item-2">
-                <img alt="daisy" src="http://localhost:3000/img/${datosEval.transicion}eval.jpg" />
+                <img alt="daisy" src="http://localhost:3000/img/eval/eval_${$.cookie("evalSession")}/${datosEval.transicion}.png" />
               </div>
               <div class="dui_diff-resizer"></div>
             </div>

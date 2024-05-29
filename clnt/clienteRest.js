@@ -80,14 +80,19 @@ function ClienteRest(){
             contentType: "application/json",
         });
     }
-    this.iniciarEvaluacion = function (tkn, callback){
+
+    this.iniciarEvaluacion = function (tkn, evalSession, callback){
+        if(!evalSession){
+            evalSession = 0;
+        }
         $.ajax({
             type: "GET",
-            url: this.url + "/iniciarEvaluacion",
+            url: this.url + "/iniciarEvaluacion/"+evalSession,
             headers: {
                 'Authorization': 'Bearer ' + tkn
             },
             success: function (data) {
+                $.cookie("evalSession", data.id);
                 callback(data);
             },
             error: function (xhr, textStatus, errorThrown) {
@@ -97,6 +102,25 @@ function ClienteRest(){
             contentType: "application/json",
         });
     };
+
+    this.evaluarTransicion = function (tkn, evalSession, transicion, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/evalImage/"+evalSession+"/"+transicion,
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback(data.GPT);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    };
+
     this.iniciarSesion = function (email, password,callback) {
         $.ajax({
             type: "POST",
