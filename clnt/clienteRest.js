@@ -69,18 +69,14 @@ function ClienteRest(){
             url: this.url + "/iniciarSesion",
             data: JSON.stringify({ email: email, password: password }),
             success: function (data) {
-                if (data.email && data.tkn) {
+                if (data.email && data.tkn && data.rol) {
                     $.cookie("email", data.email);
                     $.cookie("tkn", data.tkn);
+                    $.cookie("rol", data.rol);
                     location.reload();
                 } else {
-                    switch (data.error) {
-                        case -1:
-                            cw.mostrarMsgForm(
-                                "Las credenciales introducidas son incorrectas.",
-                                "error"
-                            );
-                            break;
+                    if(data.error){
+                        cw.errorLoginRest(data.error);
                     }
                 }
             },

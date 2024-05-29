@@ -7,7 +7,12 @@ function ControlWeb() {
                     event.preventDefault();
                     var user = $("#email").val();
                     var pass = $("#password").val();
-                    cr.iniciarSesion(user, pass);
+                    let res = comprobarDatos(user,pass)
+                    if( res == null){
+                        cr.iniciarSesion(user, pass);
+                    }else{
+                        cw.errorDatosLogin(res);
+                    }
                 });
             });
         } else {
@@ -18,21 +23,85 @@ function ControlWeb() {
                     $.removeCookie("tkn");
                     location.reload();
                 });
-                $("#centerContent").load("./clnt/usuarios.html", function () {
-                    obtenerUsuarios("");
-                    $("#table-search").on(
-                        "input",
-                        debounce(
-                            () => obtenerUsuarios($("#table-search").val()),
-                            300
-                        )
-                    );
-                    $("#añadirUsuario").click(function () {
-                        registrarUsuario();
-                    });
+                $("#usersButton").click(function () {
+                    cw.gestionarUsuarios();
                 });
             });
         }
+    };
+
+    this.errorDatosLogin = function (error) {
+        let mensaje;
+        switch (error) {
+            case -1:
+                mensaje = "El email no es válido";
+                break;
+            case -2:
+                mensaje = "Debes rellenar todos los campos";
+                break;
+        }
+        cw.errorLogin(mensaje);
+    };
+
+    this.errorLoginRest = function (error) {
+        let mensaje;
+        switch (error) {
+            case -1:
+                mensaje = "El email no es válido";
+                break;
+            case -2:
+                mensaje = "Debes rellenar todos los campos";
+                break;
+            case -3:
+                mensaje = "El usuario no existe";
+                break;
+            case -4:
+                mensaje = "La contraseña no es correcta";
+                break;
+        }
+        cw.errorLogin(mensaje);
+    };
+
+    this.errorLogin = function(mensaje){
+        $("#errorLogin").empty();
+        $("#errorLogin").append(`
+        <div class="animate__animated animate__pulse flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+            <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+            </svg>
+            <span class="sr-only">Info</span>
+            <div>
+                ${mensaje}
+            </div>
+        </div>
+        `);
+    }
+
+
+    const comprobarDatos = function (email,password) {
+        if (email !== "" && password !== "") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return -1;
+            }
+            return null;
+        } else {
+            return -2;
+        }
+    };
+
+    this.gestionarUsuarios = function () {
+        $("#centerContent").empty();
+        $("#centerContent").load("./clnt/usuarios.html", function () {
+            obtenerUsuarios("");
+            $("#table-search").on(
+                "input",
+                debounce(() => obtenerUsuarios($("#table-search").val()), 300)
+            );
+            $("#añadirUsuario").click(function () {
+                registrarUsuario();
+            });
+        });
     };
 
     function debounce(func, wait) {
@@ -43,7 +112,7 @@ function ControlWeb() {
         };
     }
 
-    function registrarUsuario(){
+    function registrarUsuario() {
         $("#modal").empty();
         $("#modal").append(`
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -99,13 +168,15 @@ function ControlWeb() {
             $("#modal").hide();
         });
 
-        $("#nombreUsuario, #apellidosUsuario, #emailUsuario, #passwordUsuario, #roles, #emailUser").on("input", function () {
+        $(
+            "#nombreUsuario, #apellidosUsuario, #emailUsuario, #passwordUsuario, #roles, #emailUser"
+        ).on("input", function () {
             const nombreActual = $("#nombreUsuario").val();
             const apellidosActual = $("#apellidosUsuario").val();
             const passwordActual = $("#passwordUsuario").val();
             const emailActual = $("#emailUser").val();
             const rolActual = $("#roles").val();
-        
+
             if (
                 nombreActual !== "" &&
                 apellidosActual !== "" &&
@@ -115,32 +186,36 @@ function ControlWeb() {
             ) {
                 $("#crearButton")
                     .prop("disabled", false)
-                    .removeClass("cursor-not-allowed bg-gray-400 hover:bg-gray-500")
+                    .removeClass(
+                        "cursor-not-allowed bg-gray-400 hover:bg-gray-500"
+                    )
                     .addClass("bg-blue-600 hover:bg-blue-700");
             } else {
                 $("#crearButton")
                     .prop("disabled", true)
-                    .addClass("cursor-not-allowed bg-gray-400 hover:bg-gray-500")
+                    .addClass(
+                        "cursor-not-allowed bg-gray-400 hover:bg-gray-500"
+                    )
                     .removeClass("bg-blue-600 hover:bg-blue-700");
             }
         });
-        
+
         $("#crearButton").click(function (event) {
             event.preventDefault();
             let datos = {};
-            if($("#passwordUsuario").val() !== ""){
+            if ($("#passwordUsuario").val() !== "") {
                 datos["password"] = $("#passwordUsuario").val();
             }
-            if($("#nombreUsuario").val() !== ""){
+            if ($("#nombreUsuario").val() !== "") {
                 datos["nombre"] = $("#nombreUsuario").val();
             }
-            if($("#apellidosUsuario").val() !== ""){
+            if ($("#apellidosUsuario").val() !== "") {
                 datos["apellidos"] = $("#apellidosUsuario").val();
             }
-            if($("#roles").val() !== ""){
+            if ($("#roles").val() !== "") {
                 datos["rol"] = $("#roles").val();
             }
-            if($("#emailUser").val() !== ""){
+            if ($("#emailUser").val() !== "") {
                 datos["email"] = $("#emailUser").val();
             }
             cr.registrarUsuario(datos, $.cookie("tkn"), function () {
@@ -157,7 +232,7 @@ function ControlWeb() {
             let cont = 0;
             data.forEach((usuario) => {
                 let rolUser;
-                switch(usuario.rol){
+                switch (usuario.rol) {
                     case "admin":
                         rolUser = "Administración";
                         break;
@@ -263,12 +338,14 @@ function ControlWeb() {
             $("#modal").hide();
         });
 
-        $("#nombreUsuario, #apellidosUsuario, #emailUsuario, #passwordUsuario, #roles").on("input", function () {
+        $(
+            "#nombreUsuario, #apellidosUsuario, #emailUsuario, #passwordUsuario, #roles"
+        ).on("input", function () {
             const nombreActual = $("#nombreUsuario").val();
             const apellidosActual = $("#apellidosUsuario").val();
             const passwordActual = $("#passwordUsuario").val();
             const rolActual = $("#roles").val();
-        
+
             if (
                 nombreActual !== usuario.nombre ||
                 apellidosActual !== usuario.apellidos ||
@@ -277,32 +354,36 @@ function ControlWeb() {
             ) {
                 $("#modifyButton")
                     .prop("disabled", false)
-                    .removeClass("cursor-not-allowed bg-gray-400 hover:bg-gray-500")
+                    .removeClass(
+                        "cursor-not-allowed bg-gray-400 hover:bg-gray-500"
+                    )
                     .addClass("bg-blue-600 hover:bg-blue-700");
             } else {
                 $("#modifyButton")
                     .prop("disabled", true)
-                    .addClass("cursor-not-allowed bg-gray-400 hover:bg-gray-500")
+                    .addClass(
+                        "cursor-not-allowed bg-gray-400 hover:bg-gray-500"
+                    )
                     .removeClass("bg-blue-600 hover:bg-blue-700");
             }
         });
-        
+
         $("#modifyButton").click(function (event) {
             event.preventDefault();
             let datos = {};
-            if($("#passwordUsuario").val() !== ""){
+            if ($("#passwordUsuario").val() !== "") {
                 datos["password"] = $("#passwordUsuario").val();
             }
-            if($("#nombreUsuario").val() !== usuario.nombre){
+            if ($("#nombreUsuario").val() !== usuario.nombre) {
                 datos["nombre"] = $("#nombreUsuario").val();
             }
-            if($("#apellidosUsuario").val() !== usuario.apellidos){
+            if ($("#apellidosUsuario").val() !== usuario.apellidos) {
                 datos["apellidos"] = $("#apellidosUsuario").val();
             }
-            if($("#roles").val() !== usuario.rol){
+            if ($("#roles").val() !== usuario.rol) {
                 datos["rol"] = $("#roles").val();
             }
-            let data = {email: usuario.email, datos: datos}
+            let data = { email: usuario.email, datos: datos };
             cr.editarUsuario(data, $.cookie("tkn"), function () {
                 obtenerUsuarios("");
                 $("#modal").hide();
