@@ -7,11 +7,37 @@ function ControlWeb() {
                     event.preventDefault();
                     var user = $("#email").val();
                     var pass = $("#password").val();
-                    let res = comprobarDatos(user,pass)
-                    if( res == null){
-                        cr.iniciarSesion(user, pass);
-                    }else{
-                        cw.errorDatosLogin(res);
+                    let res = comprobarDatos(user, pass);
+                    if (res == null) {
+                        cr.iniciarSesion(user, pass, function (error) {
+                            let mensaje;
+                            switch (error) {
+                                case -1:
+                                    mensaje = "El email no es válido";
+                                    break;
+                                case -2:
+                                    mensaje = "Debes rellenar todos los campos";
+                                    break;
+                                case -3:
+                                    mensaje = "El usuario no existe";
+                                    break;
+                                case -4:
+                                    mensaje = "La contraseña no es correcta";
+                                    break;
+                            }
+                            cw.errorLogin(mensaje);
+                        });
+                    } else {
+                        let mensaje;
+                        switch (res) {
+                            case -1:
+                                mensaje = "El email no es válido";
+                                break;
+                            case -2:
+                                mensaje = "Debes rellenar todos los campos";
+                                break;
+                        }
+                        cw.errorLogin(mensaje);
                     }
                 });
             });
@@ -30,39 +56,7 @@ function ControlWeb() {
         }
     };
 
-    this.errorDatosLogin = function (error) {
-        let mensaje;
-        switch (error) {
-            case -1:
-                mensaje = "El email no es válido";
-                break;
-            case -2:
-                mensaje = "Debes rellenar todos los campos";
-                break;
-        }
-        cw.errorLogin(mensaje);
-    };
-
-    this.errorLoginRest = function (error) {
-        let mensaje;
-        switch (error) {
-            case -1:
-                mensaje = "El email no es válido";
-                break;
-            case -2:
-                mensaje = "Debes rellenar todos los campos";
-                break;
-            case -3:
-                mensaje = "El usuario no existe";
-                break;
-            case -4:
-                mensaje = "La contraseña no es correcta";
-                break;
-        }
-        cw.errorLogin(mensaje);
-    };
-
-    this.errorLogin = function(mensaje){
+    this.errorLogin = function (mensaje) {
         $("#errorLogin").empty();
         $("#errorLogin").append(`
         <div class="animate__animated animate__pulse flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
@@ -75,10 +69,9 @@ function ControlWeb() {
             </div>
         </div>
         `);
-    }
+    };
 
-
-    const comprobarDatos = function (email,password) {
+    const comprobarDatos = function (email, password) {
         if (email !== "" && password !== "") {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
@@ -155,6 +148,13 @@ function ControlWeb() {
                         <div>
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cambiar contraseña:</label>
                             <input id="passwordUsuario" type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
+                        </div>
+                        <div id="errorCrearUsuario" class="hidden animate__animated animate__pulse flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+                            <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                            </svg>
+                            <span class="sr-only">Info</span>
+                            <a id="mensajeErrorCrearUsuario"></a>
                         </div>   
                         <button disabled id="crearButton" type="submit" class="w-full text-white bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-not-allowed" disabled>Registrar Usuario</button>
                         </button>
@@ -203,24 +203,34 @@ function ControlWeb() {
         $("#crearButton").click(function (event) {
             event.preventDefault();
             let datos = {};
-            if ($("#passwordUsuario").val() !== "") {
-                datos["password"] = $("#passwordUsuario").val();
-            }
-            if ($("#nombreUsuario").val() !== "") {
-                datos["nombre"] = $("#nombreUsuario").val();
-            }
-            if ($("#apellidosUsuario").val() !== "") {
-                datos["apellidos"] = $("#apellidosUsuario").val();
-            }
-            if ($("#roles").val() !== "") {
-                datos["rol"] = $("#roles").val();
-            }
-            if ($("#emailUser").val() !== "") {
+            if(
+                $("#passwordUsuario").val() !== "" &&
+                $("#nombreUsuario").val() !== "" &&
+                $("#apellidosUsuario").val() !== "" &&
+                $("#roles").val() !== "" &&
+                $("#emailUser").val() !== ""
+            ){
                 datos["email"] = $("#emailUser").val();
+                datos["password"] = $("#passwordUsuario").val();
+                datos["nombre"] = $("#nombreUsuario").val();
+                datos["apellidos"] = $("#apellidosUsuario").val();
+                datos["rol"] = $("#roles").val();
+            }else{
+                $("#mensajeErrorCrearUsuario").empty();
+                $("#mensajeErrorCrearUsuario").append("Debes rellenar todos los campos");
+                $("#errorCrearUsuario").show();
+                return;
             }
-            cr.registrarUsuario(datos, $.cookie("tkn"), function () {
+            cr.registrarUsuario(datos, $.cookie("tkn"), function (error) {
+                if(error){
+                    $("#mensajeErrorCrearUsuario").empty();
+                    $("#mensajeErrorCrearUsuario").append("Email ya registrado");
+                    $("#errorCrearUsuario").show();
+                    return;
+                }
                 obtenerUsuarios("");
                 $("#modal").hide();
+                cw.mostrarAlert("Usuario creado correctamente");
             });
         });
         $("#modal").show();
@@ -384,12 +394,27 @@ function ControlWeb() {
                 datos["rol"] = $("#roles").val();
             }
             let data = { email: usuario.email, datos: datos };
-            cr.editarUsuario(data, $.cookie("tkn"), function () {
-                obtenerUsuarios("");
-                $("#modal").hide();
+            cr.editarUsuario(data, $.cookie("tkn"), function (error) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    obtenerUsuarios("");
+                    $("#modal").hide();
+                    cw.mostrarAlert("Usuario editado correctamente");
+                }
             });
         });
         $("#modal").show();
+    };
+
+    this.mostrarAlert = function (mensaje) {
+        $("#alertMenu").hide();
+        $("#mensajeAlertMenu").empty();
+        $("#mensajeAlertMenu").append(mensaje);
+        $("#alertMenu").show();
+        $("#closeButtonAlert").click(function () {
+            $("#alertMenu").hide();
+        });
     };
 
     this.eliminarUsuario = function (usuario) {
@@ -424,6 +449,7 @@ function ControlWeb() {
             cr.eliminarUsuario(usuario.email, $.cookie("tkn"), function () {
                 obtenerUsuarios("");
                 $("#modal").hide();
+                cw.mostrarAlert("Usuario eliminado correctamente");
             });
         });
         $("#cancelButton").click(function () {

@@ -53,7 +53,7 @@ function ClienteRest(){
                 'Authorization': 'Bearer ' + tkn
             },
             success: function (data) {
-                callback();
+                callback(data.error);
             },
             error: function (xhr, textStatus, errorThrown) {
                 console.log("Status: " + textStatus);
@@ -63,7 +63,7 @@ function ClienteRest(){
         });
     }
     
-    this.iniciarSesion = function (email, password) {
+    this.iniciarSesion = function (email, password,callback) {
         $.ajax({
             type: "POST",
             url: this.url + "/iniciarSesion",
@@ -76,7 +76,7 @@ function ClienteRest(){
                     location.reload();
                 } else {
                     if(data.error){
-                        cw.errorLoginRest(data.error);
+                        callback(data.error);
                     }
                 }
             },
@@ -97,7 +97,7 @@ function ClienteRest(){
                 'Authorization': 'Bearer ' + tkn
             },
             success: function (data) {
-                callback();
+                callback(data.error);
             },
             error: function (xhr, textStatus, errorThrown) {
                 console.log("Status: " + textStatus);
