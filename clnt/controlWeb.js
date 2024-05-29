@@ -52,8 +52,27 @@ function ControlWeb() {
                 $("#usersButton").click(function () {
                     cw.gestionarUsuarios();
                 });
+                $("#newEvalButton").click(function () {
+                    cw.evaluar();
+                });
             });
         }
+    };
+
+    this.evaluar = function () {
+        $("#centerContent").load("./clnt/eval/eval1.html", function () {
+            $("#startEval").click(function () {
+                cw.evaluar2();
+            });
+        });
+    };
+
+    this.evaluar2 = function () {
+        $("#centerContent").load("./clnt/eval/eval2.html", function () {
+            cr.obtenerTransiciones($.cookie("tkn"), function(data){
+                console.log(data);
+            })
+        });
     };
 
     this.errorLogin = function (mensaje) {
