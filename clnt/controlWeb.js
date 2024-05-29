@@ -60,69 +60,226 @@ function ControlWeb() {
     };
 
     this.evaluar = function () {
-            $("#centerContent").load("./clnt/eval/eval1.html", function () {
-                $("#startEval").click(function () {
-                    cr.iniciarEvaluacion($.cookie("tkn"), $.cookie("evalSession"),function (data) {
+        $("#centerContent").load("./clnt/eval/eval1.html", function () {
+            $("#startEval").click(function () {
+                cr.iniciarEvaluacion(
+                    $.cookie("tkn"),
+                    $.cookie("evalSession"),
+                    function (data) {
                         cw.evaluar2(data.transiciones);
-                    });
-                });
+                    }
+                );
             });
+        });
     };
 
     this.evaluar2 = function (data) {
         let tran = [];
         data.forEach((element) => {
-            tran.push(element.replace("info4",""))
+            tran.push(element.replace("info4", ""));
         });
-        console.log(data);
-        console.log(tran);
         $("#centerContent").load("./clnt/eval/eval2.html", function () {
-            cr.evaluarTransicion($.cookie("tkn"), $.cookie("evalSession"), tran[0], function (trn) {
-                cw.tarjetaEval({transicion:tran[0], flood:trn.flood, objects:trn.objects});
-                for(let i = 1; i < tran.length; i++){
-                    cr.evaluarTransicion($.cookie("tkn"), $.cookie("evalSession"), tran[i], function (trn2) {
-                        cw.tarjetaEval({transicion:tran[i], flood:trn2.flood, objects:trn2.objects});
-                    });
-                }
+            $("#evaluarTransitabilidad").click(function(){
+                cw.evaluarTransitabilidad($.cookie("tkn"), $.cookie("evalSession"), function(){
+                });
+            })
+            cw.tablaTransiciones(tran, function () {
+                cr.evaluarTransicion(
+                    $.cookie("tkn"),
+                    $.cookie("evalSession"),
+                    tran[0],
+                    async function (trn, flood, objects) {
+                        cw.tarjetaEval({
+                            transicion: tran[0],
+                            flood: flood,
+                            objects: objects,
+                            floodGPT: trn.flood,
+                            objectsGPT: trn.objects,
+                        });
+                        $(`#tarjeta${tran[0]}`).removeClass("hidden");
+                        for (let i = 1; i < tran.length; i++) {
+                            cr.evaluarTransicion(
+                                $.cookie("tkn"),
+                                $.cookie("evalSession"),
+                                tran[i],
+                                function (trn2,flood2,objects2) {
+                                    cw.tarjetaEval({
+                                        transicion: tran[i],
+                                        flood: flood2,
+                                        objects: objects2,
+                                        floodGPT: trn2.flood,
+                                        objectsGPT: trn2.objects,
+                                    });
+                                }
+                            );
+                        }
+                    }
+                );
             });
         });
     };
 
-    this.evalImg = function (data) {
+    this.evaluacionRecibida = function (transicion, data) {
+        $(`#valor${transicion}`).empty();
+        $(`#valor${transicion}`).append(
+            data.GPT["flood"] + "/" + data.GPT["objects"]
+        );
+        $(`#estado${transicion}`).empty();
+        $(`#estado${transicion}`).append("Sin evaluar");
+        $(`#mostrar${transicion}`).removeProp("disabled");
+        $(`#mostrar${transicion}`).empty();
+        $(`#mostrar${transicion}`).append(transicion);
+        $("#mostrar" + transicion).removeClass("cursor-not-allowed");
+        $("#mostrar" + transicion).click(function () {
+            cw.mostrarTarjetaEval(transicion);
+        });
+    };
 
+    this.mostrarTarjetaEval = function (transicion) {
+        $("[id^='tarjeta']").addClass("hidden");
+        $("#tarjeta" + transicion).removeClass("hidden");
+    };
+
+    this.tablaTransiciones = function (data, callback) {
+        $("#tablaTransiciones").empty();
+        data.forEach((element) => {
+            $("#tablaTransiciones").append(`
+            <tr
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        >
+                            <th
+                                scope="row"
+                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                            >
+                            <button id="mostrar${element}" type="button" class="py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center">
+                                <svg aria-hidden="true" role="status" class="inline w-4 h-4 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="#1C64F2"/>
+                                </svg>
+                                ${element}
+                            </button>
+                            </th>
+                            <td id="valor${element}" class="px-6 py-4"></td>
+                            <td id="estado${element}" class="px-6 py-4">
+                                <span
+                                    class="dui_loading dui_loading-dots dui_loading-lg"
+                                ></span>
+                            </td>
+                        </tr>
+        `);
+        });
+        callback();
+    };
+
+    this.evaluarTransitabilidad = function(){
+        console.log("as")
     }
 
-    this.tarjetaEval = function(datosEval) {
-        $("#tarjetaEval").append(`
-        <div class="dui_card w-fit bg-base-150 shadow-xl self-center">
-        <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${datosEval.transicion}</h3>
-        <div class="w-[900px] dui_diff aspect-[16/9] p-10">
-              <div class="dui_diff-item-1">
-                <img alt="daisy" src="http://localhost:3000/img/${datosEval.transicion}.jpg" />
-              </div>
-              <div class="dui_diff-item-2">
-                <img alt="daisy" src="http://localhost:3000/img/eval/eval_${$.cookie("evalSession")}/${datosEval.transicion}.png" />
-              </div>
-              <div class="dui_diff-resizer"></div>
-            </div>
-            <div id="datosIA">
-                <div class="flex flex-col gap-4 p-8">
-                    <span class="font-semibold text-gray-900 dark:text-white">Datos de la IA</span>
-                    <span class="text-gray-500 dark:text-gray-400">Flood: ${datosEval.flood}</span>
-                    <span class="text-gray-500 dark:text-gray-400">Objetos: ${datosEval.objects}</span>
+    this.tarjetaEval = function (datosEval) {
+        $("#spinner").hide();
+        let floodBarra;
+        let objectsBarra;
+        console.log(datosEval);
+        if(datosEval.flood){
+            floodBarra = datosEval.flood;
+            $(`#estado${datosEval.transicion}`).empty();
+            $(`#estado${datosEval.transicion}`).append("Evaluado");
+            $(`#valor${datosEval.transicion}`).text(datosEval.flood + "/" + datosEval.objects);
+        }else{
+            floodBarra = datosEval.floodGPT;
+        }
+        if(datosEval.objects){
+            objectsBarra = datosEval.objects;
+        }else{
+            objectsBarra = datosEval.objectsGPT;
+        }
+        $("#dtarjetaEval").append(`
+        <div id="tarjeta${
+            datosEval.transicion
+        }" class="hidden dui_card w-fit bg-base-150 shadow-xl flex flex-col items-center">
+            <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${
+                datosEval.transicion
+            }</h3>
+            <div class="w-[900px] dui_diff aspect-[16/9] p-10">
+                <div class="dui_diff-item-1">
+                    <img alt="daisy" src="http://localhost:3000/img/${
+                        datosEval.transicion
+                    }.jpg" />
                 </div>
+                <div class="dui_diff-item-2">
+                    <img alt="daisy" src="http://localhost:3000/img/eval/eval_${$.cookie(
+                        "evalSession"
+                    )}/${datosEval.transicion}.png" />
+                </div>
+                <div class="dui_diff-resizer"></div>
             </div>
-            <div class="relative mb-6 p-10">
-                <label for="labels-range-input" class="sr-only">Labels range</label>
-                <input id="labels-range-input" type="range" value="${datosEval.flood}" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                <span class="text-sm text-gray-500 dark:text-gray-400 absolute start-0 -bottom-6">0</span>
-                <span class="text-sm text-gray-500 dark:text-gray-400 absolute start-1/3 -translate-x-1/2 rtl:translate-x-1/2 -bottom-6">25</span>
-                <span class="text-sm text-gray-500 dark:text-gray-400 absolute start-2/3 -translate-x-1/2 rtl:translate-x-1/2 -bottom-6">75</span>
-                <span class="text-sm text-gray-500 dark:text-gray-400 absolute end-0 -bottom-6">100</span>
+            <div class="flex flex-row items-center">
+                <div class="flex flex-col gap-4 p-10">
+                    <span class="font-semibold text-gray-900 dark:text-white">Estimación (IA)</span>
+                    <span class="text-gray-500 dark:text-gray-400">Flood: ${
+                        datosEval.floodGPT
+                    }</span>
+                    <span class="text-gray-500 dark:text-gray-400">Objetos: ${
+                        datosEval.objectsGPT
+                    }</span>
+                </div>
+                <div class="relative mb-6 p-10">
+                    <span class="font-semibold text-gray-900 dark:text-white">Evaluar Inundación</span>
+                    <input id="floodInput${
+                        datosEval.transicion
+                    }" type="range" value="${
+                        floodBarra
+                    }" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    <span id="floodRange${datosEval.transicion}">${
+                        floodBarra
+                    }</span>
+                </div>
+                <div class="relative mb-6 p-10">
+                    <span class="font-semibold text-gray-900 dark:text-white">Evaluar Tamaño Objetos</span>
+                    <input id="objectsInput${
+                        datosEval.transicion
+                    }" type="range" value="${
+                        objectsBarra
+                    }" min="0" max="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    <span id="objectsRange${datosEval.transicion}">${
+                        objectsBarra
+                    }</span>
+                </div>
+                <div class="pr-10">
+                    <button id="enviarVal${
+                        datosEval.transicion
+                    }" type="button" class="h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Evaluar</button>
+                </div>
             </div>
         </div>
         `);
-    }
+
+        $(`#floodInput${datosEval.transicion}`).on("input", function () {
+            $(`#floodEval${datosEval.transicion}`).text(this.value);
+            $(`#floodRange${datosEval.transicion}`).text(this.value);
+            $(`#valor${datosEval.transicion}`).text(this.value + "/" + $(`#objectsInput${datosEval.transicion}`).val());
+        });
+
+        $(`#objectsInput${datosEval.transicion}`).on("input", function () {
+            $(`#objectsValue${datosEval.transicion}`).text(this.value);
+            $(`#objectsRange${datosEval.transicion}`).text(this.value);
+            $(`#valor${datosEval.transicion}`).text($(`#floodInput${datosEval.transicion}`).val() + "/" + this.value);
+        });
+
+        $(`#enviarVal${datosEval.transicion}`).click(function () {
+            cr.enviarEvaluacion(
+                $.cookie("tkn"),
+                $.cookie("evalSession"),
+                datosEval.transicion,
+                $(`#floodInput${datosEval.transicion}`).val(),
+                $(`#objectsInput${datosEval.transicion}`).val(),
+                function () {
+                    $(`#estado${datosEval.transicion}`).empty();
+                    $(`#estado${datosEval.transicion}`).append("Evaluado");
+                }
+            );
+        });
+    };
 
     this.errorLogin = function (mensaje) {
         $("#errorLogin").empty();
@@ -271,28 +428,32 @@ function ControlWeb() {
         $("#crearButton").click(function (event) {
             event.preventDefault();
             let datos = {};
-            if(
+            if (
                 $("#passwordUsuario").val() !== "" &&
                 $("#nombreUsuario").val() !== "" &&
                 $("#apellidosUsuario").val() !== "" &&
                 $("#roles").val() !== "" &&
                 $("#emailUser").val() !== ""
-            ){
+            ) {
                 datos["email"] = $("#emailUser").val();
                 datos["password"] = $("#passwordUsuario").val();
                 datos["nombre"] = $("#nombreUsuario").val();
                 datos["apellidos"] = $("#apellidosUsuario").val();
                 datos["rol"] = $("#roles").val();
-            }else{
+            } else {
                 $("#mensajeErrorCrearUsuario").empty();
-                $("#mensajeErrorCrearUsuario").append("Debes rellenar todos los campos");
+                $("#mensajeErrorCrearUsuario").append(
+                    "Debes rellenar todos los campos"
+                );
                 $("#errorCrearUsuario").show();
                 return;
             }
             cr.registrarUsuario(datos, $.cookie("tkn"), function (error) {
-                if(error){
+                if (error) {
                     $("#mensajeErrorCrearUsuario").empty();
-                    $("#mensajeErrorCrearUsuario").append("Email ya registrado");
+                    $("#mensajeErrorCrearUsuario").append(
+                        "Email ya registrado"
+                    );
                     $("#errorCrearUsuario").show();
                     return;
                 }

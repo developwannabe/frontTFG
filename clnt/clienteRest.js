@@ -111,7 +111,8 @@ function ClienteRest(){
                 'Authorization': 'Bearer ' + tkn
             },
             success: function (data) {
-                callback(data.GPT);
+                cw.evaluacionRecibida(transicion, data);
+                callback(data.GPT,data.flood,data.objects);
             },
             error: function (xhr, textStatus, errorThrown) {
                 console.log("Status: " + textStatus);
@@ -145,6 +146,31 @@ function ClienteRest(){
             contentType: "application/json",
         });
     };
+
+    this.enviarEvaluacion = function (tkn, session, transition, flood, objects, callback){
+        let datos = {
+            id: session,
+            transition: transition,
+            flood: flood,
+            objects: objects,
+        }
+        $.ajax({
+            type: "POST",
+            url: this.url + "/evaluarTransicion",
+            data: JSON.stringify(datos),
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback(data.error);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
 
     this.registrarUsuario = function(datos, tkn, callback){
         $.ajax({
