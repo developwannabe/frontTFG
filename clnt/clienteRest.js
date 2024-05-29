@@ -80,7 +80,23 @@ function ClienteRest(){
             contentType: "application/json",
         });
     }
-    
+    this.iniciarEvaluacion = function (tkn, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/iniciarEvaluacion",
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback(data);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    };
     this.iniciarSesion = function (email, password,callback) {
         $.ajax({
             type: "POST",

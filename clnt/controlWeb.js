@@ -60,9 +60,11 @@ function ControlWeb() {
     };
 
     this.evaluar = function () {
-        $("#centerContent").load("./clnt/eval/eval1.html", function () {
-            $("#startEval").click(function () {
-                cw.evaluar2();
+        cr.iniciarEvaluacion($.cookie("tkn"), function (data) {
+            $("#centerContent").load("./clnt/eval/eval1.html", function () {
+                $("#startEval").click(function () {
+                    cw.evaluar2();
+                });
             });
         });
     };
@@ -70,10 +72,44 @@ function ControlWeb() {
     this.evaluar2 = function () {
         $("#centerContent").load("./clnt/eval/eval2.html", function () {
             cr.obtenerTransiciones($.cookie("tkn"), function(data){
-                cr.iniciarEvaluacion(data, $.cookie("tkn"));
+                //cr.iniciarEvaluacion(data, $.cookie("tkn"));
+                cw.tarjetaEval({transicion:"A1A2", flood:60, objects:3});
             })
         });
     };
+
+    this.tarjetaEval = function(datosEval) {
+        $("#tarjetaEval").empty();
+        $("#tarjetaEval").append(`
+        <div class="dui_card w-fit bg-base-150 shadow-xl self-center">
+        <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${datosEval.transicion}</h3>
+        <div class="w-[900px] dui_diff aspect-[16/9] p-10">
+              <div class="dui_diff-item-1">
+                <img alt="daisy" src="http://localhost:3000/img/${datosEval.transicion}.jpg" />
+              </div>
+              <div class="dui_diff-item-2">
+                <img alt="daisy" src="http://localhost:3000/img/${datosEval.transicion}eval.jpg" />
+              </div>
+              <div class="dui_diff-resizer"></div>
+            </div>
+            <div id="datosIA">
+                <div class="flex flex-col gap-4 p-8">
+                    <span class="font-semibold text-gray-900 dark:text-white">Datos de la IA</span>
+                    <span class="text-gray-500 dark:text-gray-400">Flood: ${datosEval.flood}</span>
+                    <span class="text-gray-500 dark:text-gray-400">Objetos: ${datosEval.objects}</span>
+                </div>
+            </div>
+            <div class="relative mb-6 p-10">
+                <label for="labels-range-input" class="sr-only">Labels range</label>
+                <input id="labels-range-input" type="range" value="${datosEval.flood}" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                <span class="text-sm text-gray-500 dark:text-gray-400 absolute start-0 -bottom-6">0</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400 absolute start-1/3 -translate-x-1/2 rtl:translate-x-1/2 -bottom-6">25</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400 absolute start-2/3 -translate-x-1/2 rtl:translate-x-1/2 -bottom-6">75</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400 absolute end-0 -bottom-6">100</span>
+            </div>
+        </div>
+        `);
+    }
 
     this.errorLogin = function (mensaje) {
         $("#errorLogin").empty();
