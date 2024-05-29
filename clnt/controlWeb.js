@@ -70,7 +70,7 @@ function ControlWeb() {
     this.evaluar2 = function () {
         $("#centerContent").load("./clnt/eval/eval2.html", function () {
             cr.obtenerTransiciones($.cookie("tkn"), function(data){
-                console.log(data);
+                cr.iniciarEvaluacion(data, $.cookie("tkn"));
             })
         });
     };
