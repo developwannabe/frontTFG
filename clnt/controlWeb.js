@@ -62,14 +62,74 @@ function ControlWeb() {
     this.evaluar = function () {
         $("#centerContent").load("./clnt/eval/eval1.html", function () {
             $("#startEval").click(function () {
-                cr.iniciarEvaluacion(
-                    $.cookie("tkn"),
-                    $.cookie("evalSession"),
-                    function (data) {
-                        cw.evaluar2(data.transiciones);
-                    }
-                );
+                if ($.cookie("evalSession") == undefined) {
+                    cr.iniciarEvaluacion(
+                        $.cookie("tkn"),
+                        $.cookie("evalSession"),
+                        function (data) {
+                            cw.evaluar2(data.transiciones);
+                        }
+                    );
+                } else {
+                    cw.evaluacionEnCurso();
+                }
             });
+        });
+    };
+
+    this.evaluacionEnCurso = function () {
+        $("#modal").empty();
+        $("#modal").append(`
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="relative p-4 w-full max-w-md max-h-full">
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <button id="closeButton" type="button" class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="popup-modal">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                    <div class="p-4 md:p-5 text-center">
+                        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                        </svg>
+                        <h3 class=" text-lg font-normal text-gray-500 dark:text-gray-400">¿Deseas reanudar la evaluación en curso?</h3>
+                        <p class="text-sm text-gray-400 dark:text-gray-300 mb-5">Perderás tu progreso si comienzas una nueva evaluación.</p>
+                        <div class ="flex flex-row items-center justify-between">
+                        <button id="reanudarButton" data-modal-hide="modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Reanudar Evaluación</button>
+                        <button id="nuevaButton" data-modal-hide="popup-modal" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                            Nueva Evaluación
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+        $("#modal").show();
+        $("#reanudarButton").click(function () {
+            cr.iniciarEvaluacion(
+                $.cookie("tkn"),
+                $.cookie("evalSession"),
+                function (data) {
+                    cw.evaluar2(data.transiciones);
+                    $("#modal").hide();
+                }
+            );
+        });
+        $("#nuevaButton").click(function () {
+            $.removeCookie("evalSession");
+            cr.iniciarEvaluacion(
+                $.cookie("tkn"),
+                $.cookie("evalSession"),
+                function (data) {
+                    cw.evaluar2(data.transiciones);
+                    $("#modal").hide();
+                }
+            );
+        });
+        $("#closeButton").click(function () {
+            $("#modal").hide();
         });
     };
 
@@ -79,10 +139,9 @@ function ControlWeb() {
             tran.push(element.replace("info4", ""));
         });
         $("#centerContent").load("./clnt/eval/eval2.html", function () {
-            $("#evaluarTransitabilidad").click(function(){
-                cw.evaluarTransitabilidad($.cookie("tkn"), $.cookie("evalSession"), function(){
-                });
-            })
+            $("#evaluarTransitabilidad").click(function () {
+                cw.evaluar3(tran);
+            });
             cw.tablaTransiciones(tran, function () {
                 cr.evaluarTransicion(
                     $.cookie("tkn"),
@@ -102,7 +161,7 @@ function ControlWeb() {
                                 $.cookie("tkn"),
                                 $.cookie("evalSession"),
                                 tran[i],
-                                function (trn2,flood2,objects2) {
+                                function (trn2, flood2, objects2) {
                                     cw.tarjetaEval({
                                         transicion: tran[i],
                                         flood: flood2,
@@ -119,13 +178,82 @@ function ControlWeb() {
         });
     };
 
+    this.evaluar3 = async function (transiciones) {
+        const result = await comprobarEval(transiciones);
+        if (result) {
+            $("#tabMedio").empty();
+            $("#tabMedio").text("Transitabilidad");
+            cr.fisTransiciones(
+                $.cookie("tkn"),
+                $.cookie("evalSession"),
+                function (data) {
+                    let keys = Object.keys(data.evaluacion);
+                    let datos = [];
+                    for(let i = 0; i<keys.length; i++){
+                        datos.push({"id":keys[i].slice(5), "flood":data.evaluacion[keys[i]].flood, "objects":data.evaluacion[keys[i]].objects});
+                    }
+                    cw.tablaTransicionesT(datos, function () {
+                        $("#barraFlood").empty();
+                        $("#barraObjetos").empty();
+                        for(let i = 0; i<keys.length; i++){
+                            $(`#barraTransitabilidad${keys[i].slice(5)}`).append(`
+                            <span class="font-semibold text-gray-900 dark:text-white">Evaluar Tamaño Objetos</span>
+                                <input id="objectsInput${
+                                    datosEval.transicion
+                                }" type="range" value="${objectsBarra}" min="0" max="10" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                                <span id="objectsRange${
+                                datosEval.transicion
+                                }">${objectsBarra}</span>
+                            `);
+                            $(`#transitabilidadInput${keys[i].slice(5)}`).on("input", function () {
+                                $(`#transitabilidadRange${keys[i].slice(5)}`).text(this.value);
+                            });
+                        }
+                    });
+                }
+            );
+        } else {
+            cw.mostrarAlert("Se deben evaluar todas las transiciones");
+        }
+    };
+
+    async function comprobarEval(transiciones) {
+        for (const element of transiciones) {
+            const result = await new Promise((resolve, reject) => {
+                cr.evaluarTransicion(
+                    $.cookie("tkn"),
+                    $.cookie("evalSession"),
+                    element,
+                    function (trn, flood, objects) {
+                        if (flood == null || objects == null) {
+                            console.log("a");
+                            resolve(false);
+                        } else {
+                            resolve(true);
+                        }
+                    }
+                );
+            });
+            if (!result) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     this.evaluacionRecibida = function (transicion, data) {
         $(`#valor${transicion}`).empty();
-        $(`#valor${transicion}`).append(
-            data.GPT["flood"] + "/" + data.GPT["objects"]
-        );
-        $(`#estado${transicion}`).empty();
-        $(`#estado${transicion}`).append("Sin evaluar");
+        if (data.flood == null && data.objects == null) {
+            $(`#valor${transicion}`).append(
+                data.GPT["flood"] + "/" + data.GPT["objects"]
+            );
+            $(`#estado${transicion}`).empty();
+            $(`#estado${transicion}`).append("Sin evaluar");
+        } else {
+            $(`#valor${transicion}`).append(data.flood + "/" + data.objects);
+            $(`#estado${transicion}`).empty();
+            $(`#estado${transicion}`).append("Evaluado");
+        }
         $(`#mostrar${transicion}`).removeProp("disabled");
         $(`#mostrar${transicion}`).empty();
         $(`#mostrar${transicion}`).append(transicion);
@@ -138,6 +266,38 @@ function ControlWeb() {
     this.mostrarTarjetaEval = function (transicion) {
         $("[id^='tarjeta']").addClass("hidden");
         $("#tarjeta" + transicion).removeClass("hidden");
+    };
+
+    this.tablaTransicionesT = function (data, callback) {
+        $("#tablaTransiciones").empty();
+        data.forEach((element) => {
+            $("#tablaTransiciones").append(`
+            <tr
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        >
+                            <th
+                                scope="row"
+                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                            >
+                            <button id="mostrar${element.id}" type="button" class="py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center">
+                                ${element.id}
+                            </button>
+                            </th>
+                            <td id="valor${element.id}" class="px-6 py-4">${element.flood}/${element.objects} => </td>
+                            <td id="estado${element.id}" class="px-6 py-4">
+                                Sin revisar
+                            </td>
+                        </tr>
+        `);
+        $(`#mostrar${element.id}`).removeProp("disabled");
+        $(`#mostrar${element.id}`).empty();
+        $(`#mostrar${element.id}`).append(element.id);
+        $("#mostrar" + element.id).removeClass("cursor-not-allowed");
+        $("#mostrar" + element.id).click(function () {
+            cw.mostrarTarjetaEval(element.id);
+        });
+        });
+        callback();
     };
 
     this.tablaTransiciones = function (data, callback) {
@@ -171,26 +331,23 @@ function ControlWeb() {
         callback();
     };
 
-    this.evaluarTransitabilidad = function(){
-        console.log("as")
-    }
-
     this.tarjetaEval = function (datosEval) {
         $("#spinner").hide();
         let floodBarra;
         let objectsBarra;
-        console.log(datosEval);
-        if(datosEval.flood){
+        if (datosEval.flood) {
             floodBarra = datosEval.flood;
             $(`#estado${datosEval.transicion}`).empty();
             $(`#estado${datosEval.transicion}`).append("Evaluado");
-            $(`#valor${datosEval.transicion}`).text(datosEval.flood + "/" + datosEval.objects);
-        }else{
+            $(`#valor${datosEval.transicion}`).text(
+                datosEval.flood + "/" + datosEval.objects
+            );
+        } else {
             floodBarra = datosEval.floodGPT;
         }
-        if(datosEval.objects){
+        if (datosEval.objects) {
             objectsBarra = datosEval.objects;
-        }else{
+        } else {
             objectsBarra = datosEval.objectsGPT;
         }
         $("#dtarjetaEval").append(`
@@ -200,7 +357,7 @@ function ControlWeb() {
             <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${
                 datosEval.transicion
             }</h3>
-            <div class="w-[900px] dui_diff aspect-[16/9] p-10">
+            <div class="w-[700px] dui_diff aspect-[16/9] p-10">
                 <div class="dui_diff-item-1">
                     <img alt="daisy" src="http://localhost:3000/img/${
                         datosEval.transicion
@@ -223,27 +380,26 @@ function ControlWeb() {
                         datosEval.objectsGPT
                     }</span>
                 </div>
-                <div class="relative mb-6 p-10">
+                <div id="barraFlood" class="flex flex-col gap-2 relative mb-6 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Evaluar Inundación</span>
                     <input id="floodInput${
                         datosEval.transicion
-                    }" type="range" value="${
-                        floodBarra
-                    }" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                    <span id="floodRange${datosEval.transicion}">${
-                        floodBarra
-                    }</span>
+                    }" type="range" value="${floodBarra}" min="0" max="100" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    <span id="floodRange${
+                        datosEval.transicion
+                    }">${floodBarra}</span>
                 </div>
-                <div class="relative mb-6 p-10">
+                <div id="barraObjetos" class="flex flex-col gap-2 relative mb-6 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Evaluar Tamaño Objetos</span>
                     <input id="objectsInput${
                         datosEval.transicion
-                    }" type="range" value="${
-                        objectsBarra
-                    }" min="0" max="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                    <span id="objectsRange${datosEval.transicion}">${
-                        objectsBarra
-                    }</span>
+                    }" type="range" value="${objectsBarra}" min="0" max="10" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    <span id="objectsRange${
+                        datosEval.transicion
+                    }">${objectsBarra}</span>
+                </div>
+                <div id="barraTransitabilidad${datosEval.transicion}" class="flex flex-col gap-2 relative mb-6 p-10">
+                    
                 </div>
                 <div class="pr-10">
                     <button id="enviarVal${
@@ -257,13 +413,19 @@ function ControlWeb() {
         $(`#floodInput${datosEval.transicion}`).on("input", function () {
             $(`#floodEval${datosEval.transicion}`).text(this.value);
             $(`#floodRange${datosEval.transicion}`).text(this.value);
-            $(`#valor${datosEval.transicion}`).text(this.value + "/" + $(`#objectsInput${datosEval.transicion}`).val());
+            $(`#valor${datosEval.transicion}`).text(
+                this.value +
+                    "/" +
+                    $(`#objectsInput${datosEval.transicion}`).val()
+            );
         });
 
         $(`#objectsInput${datosEval.transicion}`).on("input", function () {
             $(`#objectsValue${datosEval.transicion}`).text(this.value);
             $(`#objectsRange${datosEval.transicion}`).text(this.value);
-            $(`#valor${datosEval.transicion}`).text($(`#floodInput${datosEval.transicion}`).val() + "/" + this.value);
+            $(`#valor${datosEval.transicion}`).text(
+                $(`#floodInput${datosEval.transicion}`).val() + "/" + this.value
+            );
         });
 
         $(`#enviarVal${datosEval.transicion}`).click(function () {

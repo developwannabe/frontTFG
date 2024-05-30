@@ -147,6 +147,24 @@ function ClienteRest(){
         });
     };
 
+    this.fisTransiciones = function(tkn, idSession, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/fisTransiciones/"+idSession,
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback(data);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
+
     this.enviarEvaluacion = function (tkn, session, transition, flood, objects, callback){
         let datos = {
             id: session,
