@@ -165,6 +165,23 @@ function ClienteRest(){
         });
     }
 
+    this.transitabilidadTransicion = function (tkn, idSession, transicion, valor, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/transitabilidad/"+idSession+"/"+transicion+"/"+valor,
+            headers: {
+                'Authorization': 'Bearer ' + tkn
+            },
+            success: function (data) {
+                callback(data);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
     this.enviarEvaluacion = function (tkn, session, transition, flood, objects, callback){
         let datos = {
             id: session,

@@ -67,7 +67,7 @@ function ControlWeb() {
                         $.cookie("tkn"),
                         $.cookie("evalSession"),
                         function (data) {
-                            cw.evaluar2(data.transiciones);
+                            cw.evaluar2(data.transiciones, data.magnitude);
                         }
                     );
                 } else {
@@ -112,7 +112,7 @@ function ControlWeb() {
                 $.cookie("tkn"),
                 $.cookie("evalSession"),
                 function (data) {
-                    cw.evaluar2(data.transiciones);
+                    cw.evaluar2(data.transiciones,data.magnitude);
                     $("#modal").hide();
                 }
             );
@@ -123,7 +123,7 @@ function ControlWeb() {
                 $.cookie("tkn"),
                 $.cookie("evalSession"),
                 function (data) {
-                    cw.evaluar2(data.transiciones);
+                    cw.evaluar2(data.transiciones,data.magnitude);
                     $("#modal").hide();
                 }
             );
@@ -133,12 +133,18 @@ function ControlWeb() {
         });
     };
 
-    this.evaluar2 = function (data) {
+    this.evaluar2 = function (data,magnitude) {
         let tran = [];
+        console.log(magnitude)
         data.forEach((element) => {
             tran.push(element.replace("info4", ""));
         });
         $("#centerContent").load("./clnt/eval/eval2.html", function () {
+            $("#magnitudTerremoto").append(`
+            <h3 class="font-semibold text-gray-900 dark:text-white p-1">Magnitud del Terremoto: ${
+                magnitude
+            }</h3>
+            `);
             $("#evaluarTransitabilidad").click(function () {
                 cw.evaluar3(tran);
             });
@@ -182,32 +188,105 @@ function ControlWeb() {
         const result = await comprobarEval(transiciones);
         if (result) {
             $("#tabMedio").empty();
-            $("#tabMedio").text("Transitabilidad");
+            $("#tabMedio").text("Evaluación");
             cr.fisTransiciones(
                 $.cookie("tkn"),
                 $.cookie("evalSession"),
                 function (data) {
                     let keys = Object.keys(data.evaluacion);
                     let datos = [];
-                    for(let i = 0; i<keys.length; i++){
-                        datos.push({"id":keys[i].slice(5), "flood":data.evaluacion[keys[i]].flood, "objects":data.evaluacion[keys[i]].objects});
+                    for (let i = 0; i < keys.length; i++) {
+                        datos.push({
+                            id: keys[i].slice(5),
+                            flood: data.evaluacion[keys[i]].flood,
+                            objects: data.evaluacion[keys[i]].objects,
+                            fis: data.evaluacion[keys[i]].fis,
+                            transitabilidad:
+                                data.evaluacion[keys[i]].transitabilidad,
+                        });
                     }
                     cw.tablaTransicionesT(datos, function () {
-                        $("#barraFlood").empty();
-                        $("#barraObjetos").empty();
-                        for(let i = 0; i<keys.length; i++){
-                            $(`#barraTransitabilidad${keys[i].slice(5)}`).append(`
-                            <span class="font-semibold text-gray-900 dark:text-white">Evaluar Tamaño Objetos</span>
-                                <input id="objectsInput${
-                                    datosEval.transicion
-                                }" type="range" value="${objectsBarra}" min="0" max="10" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                                <span id="objectsRange${
-                                datosEval.transicion
-                                }">${objectsBarra}</span>
-                            `);
-                            $(`#transitabilidadInput${keys[i].slice(5)}`).on("input", function () {
-                                $(`#transitabilidadRange${keys[i].slice(5)}`).text(this.value);
+                        $("div.barraEval").remove();
+                        $("#buttonNext").empty();
+                        $("div.botonEnviarT").empty();
+                        $("#buttonNext").append(`
+                        <button
+                            id="finEvaluacion"
+                            type="button"
+                            class="h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                        >
+                            Finalizar Evaluación
+                        </button>
+                        `);
+                        $("#finEvaluacion").click(function () {
+                            cw.finalizarEvaluacion();
+                        });
+                        for (let i = 0; i < keys.length; i++) {
+                            $(`#botonEnviarT${keys[i].slice(5)}`).append(`
+                                <button id="finEvalB${
+                                    keys[i].slice(5)
+                                }" type="button" class="h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Revisar</button>
+                            `)
+                            $(`#finEvalB${keys[i].slice(5)}`).click(function () {
+                                cr.transitabilidadTransicion(
+                                    $.cookie("tkn"),
+                                    $.cookie("evalSession"),
+                                    keys[i].slice(5),
+                                    $(`#transitabilidadInput${keys[i].slice(5)}`).val(),
+                                    function(){
+
+                                    }
+                                )
                             });
+                            $(`#evalF${keys[i].slice(5)}`).append(`
+                            <span class="font-semibold text-gray-900 dark:text-white">Evaluación</span>
+                            <span class="text-gray-500 dark:text-gray-400">Flood: ${
+                                data.evaluacion[keys[i]].flood
+                            }</span>
+                            <span class="text-gray-500 dark:text-gray-400">Objetos: ${
+                                data.evaluacion[keys[i]].objects
+                            }</span>
+                            `);
+                            $(`#evalF${keys[i].slice(5)}`).removeClass(
+                                "hidden"
+                            );
+                            $(`#barraTransitabilidad${keys[i].slice(5)}`)
+                                .append(`
+                            <span class="font-semibold text-gray-900 dark:text-white">Evaluar Transitabilidad (0 Mejor)</span>
+                                <input id="transitabilidadInput${keys[i].slice(
+                                    5
+                                )}" type="range" value="${
+                                data.evaluacion[keys[i]].fis
+                            }" min="0" max="10" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                                <span id="transitabilidadRange${keys[i].slice(
+                                    5
+                                )}">${data.evaluacion[keys[i]].fis}</span>
+                            `);
+                            $(`#transitabilidadInput${keys[i].slice(5)}`).on(
+                                "input",
+                                function () {
+                                    $(
+                                        `#transitabilidadRange${keys[i].slice(
+                                            5
+                                        )}`
+                                    ).text(this.value);
+                                    $(`#valor${keys[i].slice(5)}`).text(
+                                        `${data.evaluacion[keys[i]].flood}/${
+                                            data.evaluacion[keys[i]].objects
+                                        } => ${this.value}`
+                                    );
+                                }
+                            );
+                            $(`#transitabilidadInput${keys[i].slice(5)}`).on(
+                                "input",
+                                function () {
+                                    $(
+                                        `#transitabilidadRange${keys[i].slice(
+                                            5
+                                        )}`
+                                    ).text(this.value);
+                                }
+                            );
                         }
                     });
                 }
@@ -270,7 +349,16 @@ function ControlWeb() {
 
     this.tablaTransicionesT = function (data, callback) {
         $("#tablaTransiciones").empty();
+        let tr;
+        let str;
         data.forEach((element) => {
+            if (element.transitabilidad) {
+                tr = element.transitabilidad;
+                str = "Revisada";
+            } else {
+                tr = element.fis;
+                str = "Sin revisar";
+            }
             $("#tablaTransiciones").append(`
             <tr
                             class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
@@ -283,19 +371,19 @@ function ControlWeb() {
                                 ${element.id}
                             </button>
                             </th>
-                            <td id="valor${element.id}" class="px-6 py-4">${element.flood}/${element.objects} => </td>
+                            <td id="valor${element.id}" class="px-6 py-4">${element.flood}/${element.objects} => ${tr}</td>
                             <td id="estado${element.id}" class="px-6 py-4">
-                                Sin revisar
+                                ${str}
                             </td>
                         </tr>
         `);
-        $(`#mostrar${element.id}`).removeProp("disabled");
-        $(`#mostrar${element.id}`).empty();
-        $(`#mostrar${element.id}`).append(element.id);
-        $("#mostrar" + element.id).removeClass("cursor-not-allowed");
-        $("#mostrar" + element.id).click(function () {
-            cw.mostrarTarjetaEval(element.id);
-        });
+            $(`#mostrar${element.id}`).removeProp("disabled");
+            $(`#mostrar${element.id}`).empty();
+            $(`#mostrar${element.id}`).append(element.id);
+            $("#mostrar" + element.id).removeClass("cursor-not-allowed");
+            $("#mostrar" + element.id).click(function () {
+                cw.mostrarTarjetaEval(element.id);
+            });
         });
         callback();
     };
@@ -380,7 +468,11 @@ function ControlWeb() {
                         datosEval.objectsGPT
                     }</span>
                 </div>
-                <div id="barraFlood" class="flex flex-col gap-2 relative mb-6 p-10">
+                <div id="evalF${
+                    datosEval.transicion
+                }" class="hidden flex flex-col gap-4 p-10">
+                </div>
+                <div id="barraFlood" class="barraEval flex flex-col gap-2 relative mb-6 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Evaluar Inundación</span>
                     <input id="floodInput${
                         datosEval.transicion
@@ -389,7 +481,7 @@ function ControlWeb() {
                         datosEval.transicion
                     }">${floodBarra}</span>
                 </div>
-                <div id="barraObjetos" class="flex flex-col gap-2 relative mb-6 p-10">
+                <div id="barraObjetos" class="barraEval flex flex-col gap-2 relative mb-6 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Evaluar Tamaño Objetos</span>
                     <input id="objectsInput${
                         datosEval.transicion
@@ -398,10 +490,12 @@ function ControlWeb() {
                         datosEval.transicion
                     }">${objectsBarra}</span>
                 </div>
-                <div id="barraTransitabilidad${datosEval.transicion}" class="flex flex-col gap-2 relative mb-6 p-10">
+                <div id="barraTransitabilidad${
+                    datosEval.transicion
+                }" class="flex flex-col gap-2 relative mb-6 p-10">
                     
                 </div>
-                <div class="pr-10">
+                <div id="botonEnviarT${datosEval.transicion}" class="botonEnviarT pr-10">
                     <button id="enviarVal${
                         datosEval.transicion
                     }" type="button" class="h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Evaluar</button>
