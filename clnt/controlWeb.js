@@ -411,6 +411,7 @@ function ControlWeb() {
                 $.cookie("evalSession"),
                 function () {
                     $.removeCookie("evalSession");
+                    $("#modal").hide();
                     cw.evaluacionFinalizada();
                 }
             );
