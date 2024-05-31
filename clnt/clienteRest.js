@@ -121,6 +121,24 @@ function ClienteRest() {
         });
     };
 
+    this.finalizarEvaluacion = function(tkn, evalSession, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/finalizarEvaluacion/" + evalSession,
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function (data) {
+                callback();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
+
     this.evaluarTransicion = function (tkn, evalSession, transicion, callback) {
         $.ajax({
             type: "GET",

@@ -186,8 +186,9 @@ function ControlWeb() {
         $(`#buttonNext`).hide();
         if (result) {
             $("#dtarjetaEval").hide();
-            $("#spinner").show();
+            $("#tablaEvaluacioness").hide();
             $("#tabMedio").text("Evaluación");
+            $("#spinner").removeClass("hidden");
             $("#tablaTransiciones").empty();
             $("#tablaTransiciones").append(`
             <tr
@@ -227,6 +228,14 @@ function ControlWeb() {
                         $("#buttonNext").empty();
                         $("div.botonEnviarT").empty();
                         $("#buttonNext").append(`
+                        <div class="flex flex-row gap-2">
+                        <button
+                            id="volverAtras"
+                            type="button"
+                            class="h-fit py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center"
+                        >
+                            Volver atrás
+                        </button>
                         <button
                             id="finEvaluacion"
                             type="button"
@@ -234,10 +243,15 @@ function ControlWeb() {
                         >
                             Finalizar Evaluación
                         </button>
+                        </div>
                         `);
                         $(`#buttonNext`).show();
+                        $("#tablaEvaluacioness").show();
                         $("#finEvaluacion").click(function () {
                             cw.finalizarEvaluacion();
+                        });
+                        $("#volverAtras").click(function () {
+                            cw.evaluar2(keys, data.magnitude);
                         });
                         for (let i = 0; i < keys.length; i++) {
                             $(`#botonEnviarT${keys[i].slice(5)}`).append(`
@@ -257,10 +271,12 @@ function ControlWeb() {
                                             ].slice(5)}`
                                         ).val(),
                                         function () {
-                                            $(`#estado${keys[i].slice(5)}`).empty();
-                                            $(`#estado${keys[i].slice(5)}`).append(
-                                                "Revisada"
-                                            );
+                                            $(
+                                                `#estado${keys[i].slice(5)}`
+                                            ).empty();
+                                            $(
+                                                `#estado${keys[i].slice(5)}`
+                                            ).append("Revisada");
                                         }
                                     );
                                     $(`#valor${keys[i].slice(5)}`).text(
@@ -274,7 +290,7 @@ function ControlWeb() {
                                     );
                                 }
                             );
-                            $("#spinner").hide();
+                            $("#spinner").addClass("hidden");
                             $("#dtarjetaEval").show();
                             $(`#evalF${keys[i].slice(5)}`).append(`
                             <span class="font-semibold text-gray-900 dark:text-white">Evaluación</span>
@@ -336,28 +352,81 @@ function ControlWeb() {
     };
 
     this.finalizarEvaluacion = function () {
-        cr.obtenerEvaluacion($.cookie("tkn"), $.cookie("evalSession"), function (data){
-            let ret = true;
-            let k = Object.keys(data.evaluacion)
-            for(let i = 0; i < k.length; i++){
-                if(!data.evaluacion[k[i]].transitabilidad){
-                    ret = false;
+        cr.obtenerEvaluacion(
+            $.cookie("tkn"),
+            $.cookie("evalSession"),
+            function (data) {
+                let ret = true;
+                let k = Object.keys(data.evaluacion);
+                for (let i = 0; i < k.length; i++) {
+                    if (!data.evaluacion[k[i]].transitabilidad) {
+                        ret = false;
+                    }
+                }
+                if (ret) {
+                    cw.modalFinalizar();
+                } else {
+                    cw.mostrarAlert("Se deben revisar todas las vías");
                 }
             }
-            if(ret){
-                cr.finalizarEvaluacion($.cookie("tkn"), $.cookie("evalSession"), function(){
-                    cw.evaluar4();
-                });
-            }else{
-                cw.mostrarAlert("Se deben revisar todas las vías");
-            }
-        });
-    }
+        );
+    };
 
-    this.evaluar4 = function () {
-        $("#centerContent").load("./clnt/eval/eval3.html", function () {
+    this.modalFinalizar = function () {
+        $("#modal").empty();
+        $("#modal").append(`
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="relative p-4 w-full max-w-md max-h-full">
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <button id="closeButton" type="button" class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="popup-modal">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                    <div class="p-4 md:p-5 text-center">
+                        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                        </svg>
+                        <h3 class=" text-lg font-normal text-gray-500 dark:text-gray-400">¿Deseas finalizar la evaluación?</h3>
+                        <p class="text-sm text-gray-400 dark:text-gray-300 mb-5">No podrás modificarla una vez finalizada.</p>
+                        <div class ="flex flex-row items-center justify-between">
+                        <button id="reanudarButton" data-modal-hide="modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Reanudar Evaluación</button>
+                        <button id="finalizarButton" data-modal-hide="popup-modal" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                            Finalizar Evaluación
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+        $("#modal").show();
+        $("#reanudarButton").click(function () {
+            $("#modal").hide();
         });
-    }
+        $("#finalizarButton").click(function () {
+            cr.finalizarEvaluacion(
+                $.cookie("tkn"),
+                $.cookie("evalSession"),
+                function () {
+                    $.removeCookie("evalSession");
+                    cw.evaluacionFinalizada();
+                }
+            );
+        });
+        $("#closeButton").click(function () {
+            $("#modal").hide();
+        });
+    };
+
+    this.evaluacionFinalizada = function () {
+        $("#centerContent").load("./clnt/eval/eval3.html", function () {
+            $("#verEvaluacionesFin").click(function () {
+                cw.verEvaluacionesAnteriores();
+            });
+        });
+    };
 
     async function comprobarEval(transiciones) {
         for (const element of transiciones) {
@@ -383,11 +452,12 @@ function ControlWeb() {
         return true;
     }
 
-    async function comprobarRev() {
-    }
+    async function comprobarRev() {}
 
     this.evaluacionRecibida = function (transicion, data) {
         $(`#valor${transicion}`).empty();
+        $("#tablaEvaluacioness").show();
+        $("#evaluarTransitabilidad").show();
         if (data.flood == null && data.objects == null) {
             $(`#valor${transicion}`).append(
                 data.GPT["flood"] + "/" + data.GPT["objects"]
@@ -486,7 +556,7 @@ function ControlWeb() {
     };
 
     this.tarjetaEval = function (datosEval) {
-        $("#spinner").hide();
+        $("#spinner").addClass("hidden");
         let floodBarra;
         let objectsBarra;
         if (datosEval.flood) {
