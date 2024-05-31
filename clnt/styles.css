@@ -2549,6 +2549,10 @@ html {
   bottom: 0px;
 }
 
+.bottom-4 {
+  bottom: 1rem;
+}
+
 .end-2 {
   inset-inline-end: 0.5rem;
 }
@@ -2573,6 +2577,10 @@ html {
   right: 0.625rem;
 }
 
+.right-4 {
+  right: 1rem;
+}
+
 .start-0 {
   inset-inline-start: 0px;
 }
@@ -2583,14 +2591,6 @@ html {
 
 .top-3 {
   top: 0.75rem;
-}
-
-.bottom-4 {
-  bottom: 1rem;
-}
-
-.right-4 {
-  right: 1rem;
 }
 
 .z-40 {
@@ -2815,8 +2815,8 @@ html {
   width: 24rem;
 }
 
-.w-\[900px\] {
-  width: 900px;
+.w-\[700px\] {
+  width: 700px;
 }
 
 .w-fit {
@@ -2828,12 +2828,20 @@ html {
   width: 100%;
 }
 
-.w-\[800px\] {
-  width: 800px;
+.w-20 {
+  width: 5rem;
 }
 
-.w-\[700px\] {
-  width: 700px;
+.w-\[200px\] {
+  width: 200px;
+}
+
+.w-\[400px\] {
+  width: 400px;
+}
+
+.w-\[470px\] {
+  width: 470px;
 }
 
 .max-w-md {
@@ -2913,10 +2921,6 @@ html {
   justify-content: space-between;
 }
 
-.gap-4 {
-  gap: 1rem;
-}
-
 .gap-10 {
   gap: 2.5rem;
 }
@@ -2925,16 +2929,8 @@ html {
   gap: 0.5rem;
 }
 
-.gap-20 {
-  gap: 5rem;
-}
-
-.gap-\[20px\] {
-  gap: 20px;
-}
-
-.gap-24 {
-  gap: 6rem;
+.gap-4 {
+  gap: 1rem;
 }
 
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
@@ -3122,6 +3118,10 @@ html {
   fill: #1C64F2;
 }
 
+.p-1 {
+  padding: 0.25rem;
+}
+
 .p-10 {
   padding: 2.5rem;
 }
@@ -3144,10 +3144,6 @@ html {
 
 .p-8 {
   padding: 2rem;
-}
-
-.p-1 {
-  padding: 0.25rem;
 }
 
 .px-3 {
@@ -3237,6 +3233,14 @@ html {
 
 .pt-8 {
   padding-top: 2rem;
+}
+
+.pb-2 {
+  padding-bottom: 0.5rem;
+}
+
+.pb-10 {
+  padding-bottom: 2.5rem;
 }
 
 .text-left {

@@ -1,7 +1,6 @@
-function ClienteRest(){
-
+function ClienteRest() {
     if (window.location.hostname === "localhost") {
-        this.url = 'http://localhost:3000';
+        this.url = "http://localhost:3000";
     } else {
         this.url = "https://backtfg-iwr6ji5k5a-ew.a.run.app";
     }
@@ -10,9 +9,9 @@ function ClienteRest(){
         $.ajax({
             type: "POST",
             url: this.url + "/buscarUsuarios",
-            data: JSON.stringify({ input: input}),
+            data: JSON.stringify({ input: input }),
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data.usuarios);
@@ -23,15 +22,15 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.eliminarUsuario = function(email, tkn, callback){
+    this.eliminarUsuario = function (email, tkn, callback) {
         $.ajax({
             type: "DELETE",
             url: this.url + "/usuario",
-            data: JSON.stringify({ email: email}),
+            data: JSON.stringify({ email: email }),
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback();
@@ -42,15 +41,15 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.editarUsuario = function(datos, tkn, callback){
+    this.editarUsuario = function (datos, tkn, callback) {
         $.ajax({
             type: "PATCH",
             url: this.url + "/usuario",
             data: JSON.stringify(datos),
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data.error);
@@ -61,14 +60,14 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
-    
-    this.obtenerTransiciones = function (tkn, callback){
+    };
+
+    this.obtenerTransiciones = function (tkn, callback) {
         $.ajax({
             type: "GET",
             url: this.url + "/transiciones",
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data);
@@ -79,17 +78,17 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.iniciarEvaluacion = function (tkn, evalSession, callback){
-        if(!evalSession){
+    this.iniciarEvaluacion = function (tkn, evalSession, callback) {
+        if (!evalSession) {
             evalSession = 0;
         }
         $.ajax({
             type: "GET",
-            url: this.url + "/iniciarEvaluacion/"+evalSession,
+            url: this.url + "/iniciarEvaluacion/" + evalSession,
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 $.cookie("evalSession", data.id);
@@ -103,16 +102,16 @@ function ClienteRest(){
         });
     };
 
-    this.evaluarTransicion = function (tkn, evalSession, transicion, callback){
+    this.obtenerEvaluacion = function (tkn, evalSession, callback) {
+        console.log(evalSession)
         $.ajax({
             type: "GET",
-            url: this.url + "/evalImage/"+evalSession+"/"+transicion,
+            url: this.url + "/evaluacionRes/" + evalSession,
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
-                cw.evaluacionRecibida(transicion, data);
-                callback(data.GPT,data.flood,data.objects);
+                callback(data.result);
             },
             error: function (xhr, textStatus, errorThrown) {
                 console.log("Status: " + textStatus);
@@ -122,7 +121,26 @@ function ClienteRest(){
         });
     };
 
-    this.iniciarSesion = function (email, password,callback) {
+    this.evaluarTransicion = function (tkn, evalSession, transicion, callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/evalImage/" + evalSession + "/" + transicion,
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function (data) {
+                cw.evaluacionRecibida(transicion, data);
+                callback(data.GPT, data.flood, data.objects);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    };
+
+    this.iniciarSesion = function (email, password, callback) {
         $.ajax({
             type: "POST",
             url: this.url + "/iniciarSesion",
@@ -134,7 +152,7 @@ function ClienteRest(){
                     $.cookie("rol", data.rol);
                     location.reload();
                 } else {
-                    if(data.error){
+                    if (data.error) {
                         callback(data.error);
                     }
                 }
@@ -147,12 +165,12 @@ function ClienteRest(){
         });
     };
 
-    this.fisTransiciones = function(tkn, idSession, callback){
+    this.fisTransiciones = function (tkn, idSession, callback) {
         $.ajax({
             type: "GET",
-            url: this.url + "/fisTransiciones/"+idSession,
+            url: this.url + "/fisTransiciones/" + idSession,
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data);
@@ -163,14 +181,27 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.transitabilidadTransicion = function (tkn, idSession, transicion, valor, callback){
+    this.transitabilidadTransicion = function (
+        tkn,
+        idSession,
+        transicion,
+        valor,
+        callback
+    ) {
         $.ajax({
             type: "GET",
-            url: this.url + "/transitabilidad/"+idSession+"/"+transicion+"/"+valor,
+            url:
+                this.url +
+                "/transitabilidad/" +
+                idSession +
+                "/" +
+                transicion +
+                "/" +
+                valor,
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data);
@@ -181,20 +212,27 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
-    this.enviarEvaluacion = function (tkn, session, transition, flood, objects, callback){
+    };
+    this.enviarEvaluacion = function (
+        tkn,
+        session,
+        transition,
+        flood,
+        objects,
+        callback
+    ) {
         let datos = {
             id: session,
             transition: transition,
             flood: flood,
             objects: objects,
-        }
+        };
         $.ajax({
             type: "POST",
             url: this.url + "/evaluarTransicion",
             data: JSON.stringify(datos),
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data.error);
@@ -205,15 +243,15 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.registrarUsuario = function(datos, tkn, callback){
+    this.registrarUsuario = function (datos, tkn, callback) {
         $.ajax({
             type: "POST",
             url: this.url + "/registrarUsuario",
             data: JSON.stringify(datos),
             headers: {
-                'Authorization': 'Bearer ' + tkn
+                Authorization: "Bearer " + tkn,
             },
             success: function (data) {
                 callback(data.error);
@@ -224,5 +262,5 @@ function ClienteRest(){
             },
             contentType: "application/json",
         });
-    }
+    };
 }
