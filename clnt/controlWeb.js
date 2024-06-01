@@ -150,6 +150,7 @@ function ControlWeb() {
                     $.cookie("tkn"),
                     $.cookie("evalSession"),
                     tran[0],
+                    false,
                     async function (trn, flood, objects) {
                         cw.tarjetaEval({
                             transicion: tran[0],
@@ -164,6 +165,7 @@ function ControlWeb() {
                                 $.cookie("tkn"),
                                 $.cookie("evalSession"),
                                 tran[i],
+                                false,
                                 function (trn2, flood2, objects2) {
                                     cw.tarjetaEval({
                                         transicion: tran[i],
@@ -436,6 +438,7 @@ function ControlWeb() {
                     $.cookie("tkn"),
                     $.cookie("evalSession"),
                     element,
+                    true,
                     function (trn, flood, objects) {
                         if (flood == null || objects == null) {
                             console.log("a");
@@ -584,12 +587,12 @@ function ControlWeb() {
             }</h3>
             <div class="w-[700px] dui_diff aspect-[16/9] p-10">
                 <div class="dui_diff-item-1">
-                    <img alt="daisy" src="http://localhost:3000/img/${
+                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgVias/${
                         datosEval.transicion
                     }.jpg" />
                 </div>
                 <div class="dui_diff-item-2">
-                    <img alt="daisy" src="http://localhost:3000/img/eval/eval_${$.cookie(
+                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgEval/${$.cookie(
                         "evalSession"
                     )}/${datosEval.transicion}.png" />
                 </div>

@@ -139,7 +139,7 @@ function ClienteRest() {
         });
     }
 
-    this.evaluarTransicion = function (tkn, evalSession, transicion, callback) {
+    this.evaluarTransicion = function (tkn, evalSession, transicion, boole, callback) {
         $.ajax({
             type: "GET",
             url: this.url + "/evalImage/" + evalSession + "/" + transicion,
@@ -147,7 +147,9 @@ function ClienteRest() {
                 Authorization: "Bearer " + tkn,
             },
             success: function (data) {
-                cw.evaluacionRecibida(transicion, data);
+                if(!boole){
+                    cw.evaluacionRecibida(transicion, data);
+                }
                 callback(data.GPT, data.flood, data.objects);
             },
             error: function (xhr, textStatus, errorThrown) {
