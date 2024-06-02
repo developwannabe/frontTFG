@@ -55,8 +55,45 @@ function ControlWeb() {
                 $("#newEvalButton").click(function () {
                     cw.evaluar();
                 });
+                $("#oldEvalButton").click(function () {
+                    cw.evaluacionesAnteriores();
+                });
             });
         }
+    };
+
+    this.evaluacionesAnteriores = function () {
+        $("#centerContent").load("./clnt/evaluaciones.html", function () {
+            cr.obtenerEvaluaciones($.cookie("tkn"), function (res) {
+                let date;
+                if(res.length > 0){
+                    $("#datosOldEval").empty();
+                    for(let i = 0; i < res.length; i++){
+                        date = new Date(res[i].id);
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const year = date.getFullYear();
+                        const hours = date.getHours().toString().padStart(2, '0');
+                        const minutes = date.getMinutes().toString().padStart(2, '0');
+                        $("#datosOldEval").append(`
+                        <tr class="bg-white dark:bg-gray-800">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            ${day}/${month}/${year} ${hours}:${minutes}
+                        </th>
+                        <td class="px-6 py-4">
+                            ${res[i].evaluador}
+                        </td>
+                        <td class="flex py-4 gap-4">
+                            <button id="ver-${res[i].id}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Ver Evaluación</button>
+                        </td>
+                    </tr>`);
+                    }
+                }else{
+                    $("#tablaOldEval").hide();
+                    cw.mostrarAlert("No hay evaluaciones anteriores");
+                }
+            });
+        });
     };
 
     this.evaluar = function () {
@@ -441,7 +478,6 @@ function ControlWeb() {
                     true,
                     function (trn, flood, objects) {
                         if (flood == null || objects == null) {
-                            console.log("a");
                             resolve(false);
                         } else {
                             resolve(true);

@@ -139,6 +139,24 @@ function ClienteRest() {
         });
     }
 
+    this.obtenerEvaluaciones = function (tkn, callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/evaluaciones",
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function (data) {
+                callback(data.evaluaciones);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
+
     this.evaluarTransicion = function (tkn, evalSession, transicion, boole, callback) {
         $.ajax({
             type: "GET",
