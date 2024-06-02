@@ -63,19 +63,32 @@ function ControlWeb() {
     };
 
     this.evaluacionesAnteriores = function () {
-        $("#centerContent").load("./clnt/evaluaciones.html", function () {
-            cr.obtenerEvaluaciones($.cookie("tkn"), function (res) {
-                let date;
-                if(res.length > 0){
-                    $("#datosOldEval").empty();
-                    for(let i = 0; i < res.length; i++){
-                        date = new Date(res[i].id);
-                        const day = date.getDate().toString().padStart(2, '0');
-                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                        const year = date.getFullYear();
-                        const hours = date.getHours().toString().padStart(2, '0');
-                        const minutes = date.getMinutes().toString().padStart(2, '0');
-                        $("#datosOldEval").append(`
+        $("#centerContent").load(
+            "./clnt/evalOld/evaluaciones.html",
+            function () {
+                cr.obtenerEvaluaciones($.cookie("tkn"), function (res) {
+                    let date;
+                    if (res.length > 0) {
+                        $("#datosOldEval").empty();
+                        for (let i = 0; i < res.length; i++) {
+                            date = new Date(res[i].id);
+                            const day = date
+                                .getDate()
+                                .toString()
+                                .padStart(2, "0");
+                            const month = (date.getMonth() + 1)
+                                .toString()
+                                .padStart(2, "0");
+                            const year = date.getFullYear();
+                            const hours = date
+                                .getHours()
+                                .toString()
+                                .padStart(2, "0");
+                            const minutes = date
+                                .getMinutes()
+                                .toString()
+                                .padStart(2, "0");
+                            $("#datosOldEval").append(`
                         <tr class="bg-white dark:bg-gray-800">
                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                             ${day}/${month}/${year} ${hours}:${minutes}
@@ -87,11 +100,97 @@ function ControlWeb() {
                             <button id="ver-${res[i].id}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Ver Evaluación</button>
                         </td>
                     </tr>`);
+                            $(`#ver-${res[i].id}`).click(function () {
+                                cw.verEvaluacion(res[i].id);
+                            });
+                        }
+                    } else {
+                        $("#tablaOldEval").hide();
+                        cw.mostrarAlert("No hay evaluaciones anteriores");
                     }
-                }else{
-                    $("#tablaOldEval").hide();
-                    cw.mostrarAlert("No hay evaluaciones anteriores");
+                });
+            }
+        );
+    };
+
+    this.verEvaluacion = function (id) {
+        $("#centerContent").empty();
+        $("#centerContent").load("./clnt/evalOld/evaluacion.html", function () {
+            $("#volverAtras").click(function () {
+                cw.evaluacionesAnteriores();
+            });
+            cr.evaluacion($.cookie("tkn"), id, function (datos) {
+                let keys = Object.keys(datos.result.evaluacion);
+                let data = [];
+                $("#magnitudTerremoto").append(`
+                <div class="flex flex-col">
+                <div class="flex flex-row items-center"><h3 class="font-semibold text-gray-900 dark:text-white p-1">Evaluación realizada por: </h3>${datos.result.user}</div>
+                <div><h3 class="font-semibold text-gray-900 dark:text-white p-1">Magnitud del Terremoto: ${datos.result.magnitude}</h3></div>
+                </div>
+            `);
+                for (let i = 0; i < keys.length; i++) {
+                    data.push({
+                        id: keys[i].slice(5),
+                        flood: datos.result.evaluacion[keys[i]].flood,
+                        objects: datos.result.evaluacion[keys[i]].objects,
+                        fis: datos.result.evaluacion[keys[i]].fis,
+                        transitabilidad:
+                            datos.result.evaluacion[keys[i]].transitabilidad,
+                    });
                 }
+                for (let i = 0; i < keys.length; i++) {
+                    $("#spinner").addClass("hidden");
+                    $("#dtarjetaEval").removeClass("hidden");
+                    cw.tarjetaEval({
+                        transicion: keys[i].slice(5),
+                        flood: data[i].flood,
+                        objects: data[i].objects,
+                        floodGPT: datos.result.evaluacion[keys[i]].gpt.flood,
+                        objectsGPT:
+                            datos.result.evaluacion[keys[i]].gpt.objects,
+                        sessionId: id,
+                    });
+                    $("div.barraEval").remove();
+                    $("div.botonEnviarT").empty();
+                    $(`#evalF${keys[i].slice(5)}`).append(`
+                            <span class="font-semibold text-gray-900 dark:text-white">Evaluación</span>
+                            <span class="text-gray-500 dark:text-gray-400">Flood: ${
+                                datos.result.evaluacion[keys[i]].flood
+                            }</span>
+                            <span class="text-gray-500 dark:text-gray-400">Objetos: ${
+                                datos.result.evaluacion[keys[i]].objects
+                            }</span>
+                            `);
+                    $(`#evalF${keys[i].slice(5)}`).removeClass("hidden");
+                    $(`#barraTransitabilidad${keys[i].slice(5)}`).append(`
+                            <div class="flex flex-col gap-2">
+                            <span class="font-semibold text-gray-900 dark:text-white">Transitabilidad</span>
+                            <div>
+                                <span class="font-semibold text-gray-900 dark:text-white">Recomendación: </span>${
+                                    datos.result.evaluacion[keys[i]].fis
+                                }    
+                            </div>
+                            <div>
+                                <span class="font-semibold text-gray-900 dark:text-white">Elección: </span> ${
+                                    datos.result.evaluacion[keys[i]]
+                                        .transitabilidad
+                                }   
+                            </div>
+                        `);
+                    $("#tarjeta" + keys[0].slice(5)).removeClass("hidden");
+                    cw.evaluacionRecibida(
+                        keys[i].slice(5),
+                        datos.result.evaluacion[keys[i]]
+                    );
+                }
+                cw.tablaTransicionesT(data, function () {
+                    for (let i = 0; i < keys.length; i++) {
+                        $(`#valor${keys[i].slice(5)}`).empty();
+                        $(`#valor${keys[i].slice(5)}`).append(datos.result.evaluacion[keys[i]].flood + " / " + datos.result.evaluacion[keys[i]].objects);
+                        $(`#estado${keys[i].slice(5)}`).empty();
+                        $(`#estado${keys[i].slice(5)}`).append(datos.result.evaluacion[keys[i]].transitabilidad);
+                    }
+                });
             });
         });
     };
@@ -195,6 +294,7 @@ function ControlWeb() {
                             objects: objects,
                             floodGPT: trn.flood,
                             objectsGPT: trn.objects,
+                            sessionId: $.cookie("evalSession"),
                         });
                         $(`#tarjeta${tran[0]}`).removeClass("hidden");
                         for (let i = 1; i < tran.length; i++) {
@@ -210,6 +310,7 @@ function ControlWeb() {
                                         objects: objects2,
                                         floodGPT: trn2.flood,
                                         objectsGPT: trn2.objects,
+                                        sessionId: $.cookie("evalSession"),
                                     });
                                 }
                             );
@@ -364,7 +465,7 @@ function ControlWeb() {
                                     <span class="font-semibold text-gray-900 dark:text-white">Recomendación: </span>${
                                         data.evaluacion[keys[i]].fis
                                     }    
-                                </div
+                                </div>
                             `);
                             $(`#transitabilidadInput${keys[i].slice(5)}`).on(
                                 "input",
@@ -463,7 +564,7 @@ function ControlWeb() {
     this.evaluacionFinalizada = function () {
         $("#centerContent").load("./clnt/eval/eval3.html", function () {
             $("#verEvaluacionesFin").click(function () {
-                cw.verEvaluacionesAnteriores();
+                cw.evaluacionesAnteriores();
             });
         });
     };
@@ -547,8 +648,8 @@ function ControlWeb() {
                                 ${element.id}
                             </button>
                             </th>
-                            <td id="valor${element.id}" class="px-6 py-4">${element.flood}/${element.objects} => ${tr}</td>
-                            <td id="estado${element.id}" class="px-6 py-4">
+                            <td id="valor${element.id}" class="px-6 py-4 text-center">${element.flood}/${element.objects} => ${tr}</td>
+                            <td id="estado${element.id}" class="px-6 py-4 text-center">
                                 ${str}
                             </td>
                         </tr>
@@ -583,8 +684,8 @@ function ControlWeb() {
                                 ${element}
                             </button>
                             </th>
-                            <td id="valor${element}" class="px-6 py-4"></td>
-                            <td id="estado${element}" class="px-6 py-4">
+                            <td id="valor${element}" class="px-6 py-4 text-center"></td>
+                            <td id="estado${element}" class="px-6 py-4 text-center">
                                 <span
                                     class="dui_loading dui_loading-dots dui_loading-lg"
                                 ></span>
@@ -628,9 +729,7 @@ function ControlWeb() {
                     }.jpg" />
                 </div>
                 <div class="dui_diff-item-2">
-                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgEval/${$.cookie(
-                        "evalSession"
-                    )}/${datosEval.transicion}.png" />
+                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgEval/${datosEval.sessionId}/${datosEval.transicion}.png" />
                 </div>
                 <div class="dui_diff-resizer"></div>
             </div>

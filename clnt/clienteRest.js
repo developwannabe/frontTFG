@@ -103,7 +103,6 @@ function ClienteRest() {
     };
 
     this.obtenerEvaluacion = function (tkn, evalSession, callback) {
-        console.log(evalSession)
         $.ajax({
             type: "GET",
             url: this.url + "/evaluacionRes/" + evalSession,
@@ -301,4 +300,22 @@ function ClienteRest() {
             contentType: "application/json",
         });
     };
+
+    this.evaluacion = function(tkn, id, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/evaluacionRes/" + id,
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function (data) {
+                callback(data);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    }
 }

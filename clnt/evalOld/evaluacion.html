@@ -5,14 +5,14 @@
     >
         <div class="flex flex-row justify-between w-full items-center pb-10">
             <div id="magnitudTerremoto"></div>
-                <div id="buttonNext" class="pr-10">
+                <div id="buttonBack" class="pr-10">
                     <button
-                        id="evaluarTransitabilidad"
-                        type="button"
-                        class="hidden h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-                    >
-                        Evaluar Transitabilidad
-                    </button>
+                            id="volverAtras"
+                            type="button"
+                            class="h-fit py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center"
+                        >
+                            Volver atrás
+                        </button>
                 </div>
         </div>
         <div class="flex w-full flex-wrap flex-row justify-center gap-10">
@@ -35,7 +35,7 @@
                 </svg>
                 <span class="sr-only">Loading...</span>
             </div>
-            <div id="dtarjetaEval" class="flex flex-col animate__animated animate__fadeIn">
+            <div id="dtarjetaEval" class="hidden flex flex-col animate__animated animate__fadeIn">
                 
             </div>
             <div class="relative w-[470px] overflow-x-auto overflow-y-auto h-50">
@@ -47,10 +47,10 @@
                     >
                         <tr>
                             <th scope="col" class="px-6 py-3">Transición</th>
-                            <th id="tabMedio" scope="col" class="px-6 py-3 text-center">
-                                Inundación/Objetos
+                            <th id="tabMedio" scope="col" class="px-10 py-3 text-center">
+                                Inundación / Objetos
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center">Estado</th>
+                            <th scope="col" class="px-6 py-3 text-center">Transitabilidad</th>
                         </tr>
                     </thead>
                     <tbody id="tablaTransiciones"></tbody>
