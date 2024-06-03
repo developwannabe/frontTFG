@@ -58,8 +58,29 @@ function ControlWeb() {
                 $("#oldEvalButton").click(function () {
                     cw.evaluacionesAnteriores();
                 });
+                $("#newRouteButton").click(function () {
+                    cw.nuevaRuta();
+                });
             });
         }
+    };
+
+    this.nuevaRuta = function () {
+        $("#centerContent").load("./clnt/rutas/nuevaRuta.html", function () {
+            cr.obtenerLugares($.cookie("tkn"), function (data) {
+                $(document).ready(function () {
+                    $("input[type=radio][name=tipoEmergencia]").change(
+                        function () {
+                            if (this.value == "1") {
+                                console.log("peo");
+                            } else if (this.value == "2") {
+                                console.log("peoo");
+                            }
+                        }
+                    );
+                });
+            });
+        });
     };
 
     this.evaluacionesAnteriores = function () {
@@ -186,9 +207,15 @@ function ControlWeb() {
                 cw.tablaTransicionesT(data, function () {
                     for (let i = 0; i < keys.length; i++) {
                         $(`#valor${keys[i].slice(5)}`).empty();
-                        $(`#valor${keys[i].slice(5)}`).append(datos.result.evaluacion[keys[i]].flood + " / " + datos.result.evaluacion[keys[i]].objects);
+                        $(`#valor${keys[i].slice(5)}`).append(
+                            datos.result.evaluacion[keys[i]].flood +
+                                " / " +
+                                datos.result.evaluacion[keys[i]].objects
+                        );
                         $(`#estado${keys[i].slice(5)}`).empty();
-                        $(`#estado${keys[i].slice(5)}`).append(datos.result.evaluacion[keys[i]].transitabilidad);
+                        $(`#estado${keys[i].slice(5)}`).append(
+                            datos.result.evaluacion[keys[i]].transitabilidad
+                        );
                     }
                 });
             });
@@ -716,17 +743,11 @@ function ControlWeb() {
             objectsBarra = datosEval.objectsGPT;
         }
         $("#dtarjetaEval").append(`
-        <div id="tarjeta${
-            datosEval.transicion
-        }" class="hidden dui_card w-fit bg-base-150 shadow-xl flex flex-col items-center">
-            <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${
-                datosEval.transicion
-            }</h3>
+        <div id="tarjeta${datosEval.transicion}" class="hidden dui_card w-fit bg-base-150 shadow-xl flex flex-col items-center">
+            <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${datosEval.transicion}</h3>
             <div class="w-[700px] dui_diff aspect-[16/9] p-10">
                 <div class="dui_diff-item-1">
-                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgVias/${
-                        datosEval.transicion
-                    }.jpg" />
+                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgVias/${datosEval.transicion}.jpg" />
                 </div>
                 <div class="dui_diff-item-2">
                     <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgEval/${datosEval.sessionId}/${datosEval.transicion}.png" />
@@ -736,46 +757,26 @@ function ControlWeb() {
             <div class="flex flex-row items-center">
                 <div class="flex flex-col gap-4 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Estimación (IA)</span>
-                    <span class="text-gray-500 dark:text-gray-400">Flood: ${
-                        datosEval.floodGPT
-                    }</span>
-                    <span class="text-gray-500 dark:text-gray-400">Objetos: ${
-                        datosEval.objectsGPT
-                    }</span>
+                    <span class="text-gray-500 dark:text-gray-400">Flood: ${datosEval.floodGPT}</span>
+                    <span class="text-gray-500 dark:text-gray-400">Objetos: ${datosEval.objectsGPT}</span>
                 </div>
-                <div id="evalF${
-                    datosEval.transicion
-                }" class="hidden flex flex-col gap-4 p-10">
+                <div id="evalF${datosEval.transicion}" class="hidden flex flex-col gap-4 p-10">
                 </div>
                 <div id="barraFlood" class="barraEval flex flex-col gap-2 relative mb-6 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Evaluar Inundación</span>
-                    <input id="floodInput${
-                        datosEval.transicion
-                    }" type="range" value="${floodBarra}" min="0" max="100" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                    <span id="floodRange${
-                        datosEval.transicion
-                    }">${floodBarra}</span>
+                    <input id="floodInput${datosEval.transicion}" type="range" value="${floodBarra}" min="0" max="100" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    <span id="floodRange${datosEval.transicion}">${floodBarra}</span>
                 </div>
                 <div id="barraObjetos" class="barraEval flex flex-col gap-2 relative mb-6 p-10">
                     <span class="font-semibold text-gray-900 dark:text-white">Evaluar Tamaño Objetos</span>
-                    <input id="objectsInput${
-                        datosEval.transicion
-                    }" type="range" value="${objectsBarra}" min="0" max="10" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                    <span id="objectsRange${
-                        datosEval.transicion
-                    }">${objectsBarra}</span>
+                    <input id="objectsInput${datosEval.transicion}" type="range" value="${objectsBarra}" min="0" max="10" class="w-90 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    <span id="objectsRange${datosEval.transicion}">${objectsBarra}</span>
                 </div>
-                <div id="barraTransitabilidad${
-                    datosEval.transicion
-                }" class="flex flex-col gap-2 relative mb-6 p-10">
+                <div id="barraTransitabilidad${datosEval.transicion}" class="flex flex-col gap-2 relative mb-6 p-10">
                     
                 </div>
-                <div id="botonEnviarT${
-                    datosEval.transicion
-                }" class="botonEnviarT pr-10">
-                    <button id="enviarVal${
-                        datosEval.transicion
-                    }" type="button" class="h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Evaluar</button>
+                <div id="botonEnviarT${datosEval.transicion}" class="botonEnviarT pr-10">
+                    <button id="enviarVal${datosEval.transicion}" type="button" class="h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Evaluar</button>
                 </div>
             </div>
         </div>

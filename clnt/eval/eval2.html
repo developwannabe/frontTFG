@@ -1,21 +1,21 @@
-<div class="animate__animated animate__fadeIn">
+<div class="animate__animated animate__fadeIn flex h-[calc(100vh-2rem)]">
     <div
         id="evalContent"
-        class="flex flex-col p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14"
+        class="flex flex-col p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14 flex-grow w-full h-[calc(100%-2rem)]]"
     >
         <div class="flex flex-row justify-between w-full items-center pb-10">
             <div id="magnitudTerremoto"></div>
-                <div id="buttonNext" class="pr-10">
-                    <button
-                        id="evaluarTransitabilidad"
-                        type="button"
-                        class="hidden h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-                    >
-                        Evaluar Transitabilidad
-                    </button>
-                </div>
+            <div id="buttonNext" class="pr-10">
+                <button
+                    id="evaluarTransitabilidad"
+                    type="button"
+                    class="hidden h-fit focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                >
+                    Evaluar Transitabilidad
+                </button>
+            </div>
         </div>
-        <div class="flex w-full flex-wrap flex-row justify-center gap-10">
+        <div class="flex w-full flex-nowrap flex-row justify-center gap-10">
             <div id="spinner" class="p-[200px]" role="status">
                 <svg
                     aria-hidden="true"
@@ -35,22 +35,32 @@
                 </svg>
                 <span class="sr-only">Loading...</span>
             </div>
-            <div id="dtarjetaEval" class="flex flex-col animate__animated animate__fadeIn">
-                
-            </div>
-            <div class="relative w-[470px] overflow-x-auto overflow-y-auto h-50">
+            <div
+                id="dtarjetaEval"
+                class="flex flex-col animate__animated animate__fadeIn"
+            ></div>
+            <div
+                class="relative w-[30%] overflow-auto max-h-[calc(100vh-20rem)]"
+            >
                 <table
-                    id="tablaEvaluacioness" class="hidden animate__animated animate__fadeIn w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                    id="tablaEvaluacioness"
+                    class="hidden animate__animated animate__fadeIn w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
                 >
                     <thead
                         class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
                     >
                         <tr>
                             <th scope="col" class="px-6 py-3">Transición</th>
-                            <th id="tabMedio" scope="col" class="px-6 py-3 text-center">
+                            <th
+                                id="tabMedio"
+                                scope="col"
+                                class="px-6 py-3 text-center"
+                            >
                                 Inundación/Objetos
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center">Estado</th>
+                            <th scope="col" class="px-6 py-3 text-center">
+                                Estado
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="tablaTransiciones"></tbody>

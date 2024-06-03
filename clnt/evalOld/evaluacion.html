@@ -1,7 +1,7 @@
-<div class="animate__animated animate__fadeIn">
+<div class="animate__animated animate__fadeIn flex h-[calc(100vh-2rem)]">
     <div
         id="evalContent"
-        class="flex flex-col p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14"
+        class="flex flex-col p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14 flex-grow w-full h-[calc(100%-2rem)]]"
     >
         <div class="flex flex-row justify-between w-full items-center pb-10">
             <div id="magnitudTerremoto"></div>
@@ -15,7 +15,7 @@
                         </button>
                 </div>
         </div>
-        <div class="flex w-full flex-wrap flex-row justify-center gap-10">
+        <div class="flex w-full flex-nowrap flex-row justify-center gap-10">
             <div id="spinner" class="p-[200px]" role="status">
                 <svg
                     aria-hidden="true"
@@ -38,7 +38,7 @@
             <div id="dtarjetaEval" class="hidden flex flex-col animate__animated animate__fadeIn">
                 
             </div>
-            <div class="relative w-[470px] overflow-x-auto overflow-y-auto h-50">
+            <div class="relative w-[30%] overflow-auto max-h-[calc(100vh-20rem)]">
                 <table
                     id="tablaEvaluacioness" class="hidden animate__animated animate__fadeIn w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
                 >
