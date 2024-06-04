@@ -2928,6 +2928,10 @@ html {
   width: 10rem;
 }
 
+.w-\[400px\] {
+  width: 400px;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -3057,8 +3061,16 @@ html {
   place-self: center;
 }
 
+.self-end {
+  align-self: flex-end;
+}
+
 .self-center {
   align-self: center;
+}
+
+.justify-self-center {
+  justify-self: center;
 }
 
 .overflow-auto {

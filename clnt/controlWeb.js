@@ -52,18 +52,36 @@ function ControlWeb() {
                         $.removeCookie("tkn");
                         location.reload();
                     });
-                    $("#usersButton").click(function () {
-                        cw.gestionarUsuarios();
-                    });
-                    $("#newEvalButton").click(function () {
-                        cw.evaluar();
-                    });
-                    $("#oldEvalButton").click(function () {
-                        cw.evaluacionesAnteriores();
-                    });
-                    $("#newRouteButton").click(function () {
-                        cw.nuevaRuta();
-                    });
+                    if (
+                        $.cookie("rol") == "admin" ||
+                        $.cookie("rol") == "superUsuario"
+                    ) {
+                        $("#divUsuarios").removeClass("hidden");
+                        $("#usersButton").click(function () {
+                            cw.gestionarUsuarios();
+                        });
+                    }
+                    if (
+                        $.cookie("rol") == "evaluador" ||
+                        $.cookie("rol") == "superUsuario"
+                    ) {
+                        $("#divEvaluar").removeClass("hidden");
+                        $("#newEvalButton").click(function () {
+                            cw.evaluar();
+                        });
+                        $("#oldEvalButton").click(function () {
+                            cw.evaluacionesAnteriores();
+                        });
+                    }
+                    if (
+                        $.cookie("rol") == "personal" ||
+                        $.cookie("rol") == "superUsuario"
+                    ) {
+                        $("#divRutas").removeClass("hidden");
+                        $("#newRouteButton").click(function () {
+                            cw.nuevaRuta();
+                        });
+                    }
                 });
             });
         }
@@ -122,25 +140,49 @@ function ControlWeb() {
                                     $("#mapaShow2").attr("srcdoc", data.mapa);
                                     $("#mapaShow2").show();
                                     cw.mostrarAlert("Ruta calculada con éxito");
-                                    $("#destinosSelect").prop("disabled", false);
+                                    $("#destinosSelect").prop(
+                                        "disabled",
+                                        false
+                                    );
                                     $("#bomberosRadio").prop("disabled", false);
-                                    $("#sanitariosRadio").prop("disabled", false);
+                                    $("#sanitariosRadio").prop(
+                                        "disabled",
+                                        false
+                                    );
                                     $("#calculandoButton").addClass("hidden");
-                                    $("#solicitarRutaBtn").removeClass("hidden");
+                                    $("#solicitarRutaBtn").removeClass(
+                                        "hidden"
+                                    );
                                     $("#rutaStr").empty();
-                                    $("#rutaStr").append("Lugares: " + data.ruta);
+                                    $("#rutaStr").append(
+                                        "Lugares: " + data.ruta
+                                    );
                                     $("#etaRuta").empty();
-                                    $("#etaRuta").append("Tiempoe estimado de llegada: " + data.eta + " minutos.");
+                                    $("#etaRuta").append(
+                                        "Tiempo estimado de llegada: " +
+                                            data.eta +
+                                            " minutos."
+                                    );
                                     $("#datosRuta").removeClass("hidden");
                                 } else {
                                     $("#mapaShow2").hide();
                                     $("#mapaShow").show();
-                                    cw.mostrarAlert("No se ha podido calcular la ruta");
-                                    $("#destinosSelect").prop("disabled", false);
+                                    cw.mostrarAlert(
+                                        "No se ha podido calcular la ruta"
+                                    );
+                                    $("#destinosSelect").prop(
+                                        "disabled",
+                                        false
+                                    );
                                     $("#bomberosRadio").prop("disabled", false);
-                                    $("#sanitariosRadio").prop("disabled", false);
+                                    $("#sanitariosRadio").prop(
+                                        "disabled",
+                                        false
+                                    );
                                     $("#calculandoButton").addClass("hidden");
-                                    $("#solicitarRutaBtn").removeClass("hidden");
+                                    $("#solicitarRutaBtn").removeClass(
+                                        "hidden"
+                                    );
                                     $("#datosRuta").addClass("hidden");
                                 }
                             }
@@ -171,27 +213,26 @@ function ControlWeb() {
                 >
                     Solicitar Ruta
                 </a>`);
-                $("#solicitarRutaBtn").click(function (event) {
-                    if (
-                        $("#destinosSelect").val() != "-1" &&
-                        $("input[name=tipoEmergencia]:checked").val() !=
-                            undefined
-                    ) {
-                        event.preventDefault();
-                        $("#destinosSelect").prop("disabled", true);
-                        $("#botDiv").empty();
-                        cr.solicitarRuta(
-                            $.cookie("tkn"),
-                            $("input[name=tipoEmergencia]:checked").val(),
-                            $("#destinosSelect").val(),
-                            function () {
-                                cw.mostrarRuta(data);
-                            }
-                        );
-                    } else {
-                        cw.mostrarAlert("Debes rellenar todos los campos");
-                    }
-                });
+            $("#solicitarRutaBtn").click(function (event) {
+                if (
+                    $("#destinosSelect").val() != "-1" &&
+                    $("input[name=tipoEmergencia]:checked").val() != undefined
+                ) {
+                    event.preventDefault();
+                    $("#destinosSelect").prop("disabled", true);
+                    $("#botDiv").empty();
+                    cr.solicitarRuta(
+                        $.cookie("tkn"),
+                        $("input[name=tipoEmergencia]:checked").val(),
+                        $("#destinosSelect").val(),
+                        function () {
+                            cw.mostrarRuta(data);
+                        }
+                    );
+                } else {
+                    cw.mostrarAlert("Debes rellenar todos los campos");
+                }
+            });
         }
     };
     this.evaluacionesAnteriores = function () {
