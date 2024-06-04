@@ -2799,6 +2799,22 @@ html {
   height: 100vh;
 }
 
+.h-\[calc\(100\%-4rem\)\] {
+  height: calc(100% - 4rem);
+}
+
+.h-\[calc\(100vh-4rem\)\] {
+  height: calc(100vh - 4rem);
+}
+
+.h-\[700px\] {
+  height: 700px;
+}
+
+.h-\[30\%\] {
+  height: 30%;
+}
+
 .max-h-\[calc\(100vh-20rem\)\] {
   max-height: calc(100vh - 20rem);
 }
@@ -2880,6 +2896,34 @@ html {
   width: 100%;
 }
 
+.w-\[470px\] {
+  width: 470px;
+}
+
+.w-\[900px\] {
+  width: 900px;
+}
+
+.w-\[40\%\] {
+  width: 40%;
+}
+
+.w-\[100\%\] {
+  width: 100%;
+}
+
+.w-\[300px\] {
+  width: 300px;
+}
+
+.w-32 {
+  width: 8rem;
+}
+
+.w-36 {
+  width: 9rem;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -2947,6 +2991,10 @@ html {
 
 .flex-col {
   flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 .flex-nowrap {
