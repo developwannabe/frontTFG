@@ -318,4 +318,38 @@ function ClienteRest() {
             contentType: "application/json",
         });
     }
+
+    this.obtenerLugares = function(tkn, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/lugares",
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function (data) {
+                callback(data.lugares);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+        });
+    }
+
+    this.solicitarRuta = function(tkn, origen, destino, callback){
+        $.ajax({
+            type: "GET",
+            url: this.url + "/ruta/" + origen + "/" + destino,
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function (data) {
+                callback(data);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+        });
+    }
 }

@@ -68,16 +68,53 @@ function ControlWeb() {
     this.nuevaRuta = function () {
         $("#centerContent").load("./clnt/rutas/nuevaRuta.html", function () {
             cr.obtenerLugares($.cookie("tkn"), function (data) {
+                $("#destinosSelect").empty();
+                $("#destinosSelect").append(
+                    `<option selected value="-1">Selecciona un destino</option>`
+                );
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].id != 11) {
+                        $("#destinosSelect").append(
+                            `<option value="${data[i].id}">${data[i].desc} (${data[i].id})</option>`
+                        );
+                    }
+                }
                 $(document).ready(function () {
                     $("input[type=radio][name=tipoEmergencia]").change(
                         function () {
-                            if (this.value == "1") {
-                                console.log("peo");
-                            } else if (this.value == "2") {
-                                console.log("peoo");
+                            $("#destinosSelect").empty();
+                            $("#destinosSelect").append(
+                                `<option selected value="-1">Selecciona un destino</option>`
+                            );
+                            for (let i = 0; i < data.length; i++) {
+                                if (data[i].id != this.value) {
+                                    $("#destinosSelect").append(
+                                        `<option value="${data[i].id}">${data[i].desc} (${data[i].id})</option>`
+                                    );
+                                }
                             }
                         }
                     );
+                });
+                $("#solicitarRutaBtn").click(function (event) {
+                    if (
+                        $("#destinosSelect").val() != "-1" &&
+                        $("input[name=tipoEmergencia]:checked").val() !=
+                            undefined
+                    ) {
+                        event.preventDefault();
+                        cr.solicitarRuta(
+                            $.cookie("tkn"),
+                            $("input[name=tipoEmergencia]:checked").val(),
+                            $("#destinosSelect").val(),
+                            function (res) {
+                                //TODO: RECIBIR RUTA
+                                console.log(res);
+                            }
+                        );
+                    } else {
+                        cw.mostrarAlert("Debes rellenar todos los campos");
+                    }
                 });
             });
         });
