@@ -2924,6 +2924,10 @@ html {
   width: 9rem;
 }
 
+.w-40 {
+  width: 10rem;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
