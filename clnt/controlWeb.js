@@ -45,43 +45,45 @@ function ControlWeb() {
             $("#au").load("./clnt/menu.html", function () {
                 $("#centerContent").load("./clnt/landing.html", function () {
                     $("#userName").append($.cookie("email"));
-                    $("#userRole").append($.cookie("rol"));
-                    $("#cerrarSesion").click(function () {
-                        event.preventDefault();
-                        $.removeCookie("email");
-                        $.removeCookie("tkn");
-                        location.reload();
+                    tipoUsuario($.cookie("rol"), function (data) {
+                        $("#userRole").append(data);
+                        $("#cerrarSesion").click(function () {
+                            event.preventDefault();
+                            $.removeCookie("email");
+                            $.removeCookie("tkn");
+                            location.reload();
+                        });
+                        if (
+                            $.cookie("rol") == "admin" ||
+                            $.cookie("rol") == "superUsuario"
+                        ) {
+                            $("#divUsuarios").removeClass("hidden");
+                            $("#usersButton").click(function () {
+                                cw.gestionarUsuarios();
+                            });
+                        }
+                        if (
+                            $.cookie("rol") == "evaluador" ||
+                            $.cookie("rol") == "superUsuario"
+                        ) {
+                            $("#divEvaluar").removeClass("hidden");
+                            $("#newEvalButton").click(function () {
+                                cw.evaluar();
+                            });
+                            $("#oldEvalButton").click(function () {
+                                cw.evaluacionesAnteriores();
+                            });
+                        }
+                        if (
+                            $.cookie("rol") == "personal" ||
+                            $.cookie("rol") == "superUsuario"
+                        ) {
+                            $("#divRutas").removeClass("hidden");
+                            $("#newRouteButton").click(function () {
+                                cw.nuevaRuta();
+                            });
+                        }
                     });
-                    if (
-                        $.cookie("rol") == "admin" ||
-                        $.cookie("rol") == "superUsuario"
-                    ) {
-                        $("#divUsuarios").removeClass("hidden");
-                        $("#usersButton").click(function () {
-                            cw.gestionarUsuarios();
-                        });
-                    }
-                    if (
-                        $.cookie("rol") == "evaluador" ||
-                        $.cookie("rol") == "superUsuario"
-                    ) {
-                        $("#divEvaluar").removeClass("hidden");
-                        $("#newEvalButton").click(function () {
-                            cw.evaluar();
-                        });
-                        $("#oldEvalButton").click(function () {
-                            cw.evaluacionesAnteriores();
-                        });
-                    }
-                    if (
-                        $.cookie("rol") == "personal" ||
-                        $.cookie("rol") == "superUsuario"
-                    ) {
-                        $("#divRutas").removeClass("hidden");
-                        $("#newRouteButton").click(function () {
-                            cw.nuevaRuta();
-                        });
-                    }
                 });
             });
         }
@@ -1158,25 +1160,32 @@ function ControlWeb() {
         $("#modal").show();
     }
 
+    function tipoUsuario(rol, callback) {
+        let dev = "";
+        switch (rol) {
+            case "admin":
+                dev = "Administración";
+            case "evaluador":
+                dev = "Equipo Evaluador";
+            case "personal":
+                dev = "Personal de Emergencias";
+            case "superUsuario":
+                dev = "Super Usuario";
+            default:
+                dev = "Rol no definido";
+        }
+        callback(dev);
+    }
+
     function obtenerUsuarios(query) {
         cr.buscarUsuarios(query, $.cookie("tkn"), function (data) {
             $("#datosUsuarios").empty();
             let cont = 0;
             data.forEach((usuario) => {
-                let rolUser;
-                switch (usuario.rol) {
-                    case "admin":
-                        rolUser = "Administración";
-                        break;
-                    case "evaluador":
-                        rolUser = "Equipo Evaluador";
-                        break;
-                    case "personal":
-                        rolUser = "Personal de Emergencias";
-                        break;
-                }
-                $("#datosUsuarios")
-                    .append(`<tr class="bg-white dark:bg-gray-800">
+                tipoUsuario(usuario.rol, function (dev) {
+                    $(
+                        "#datosUsuarios"
+                    ).append(`<tr class="bg-white dark:bg-gray-800">
                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                             ${usuario.nombre}
                         </th>
@@ -1187,7 +1196,7 @@ function ControlWeb() {
                             ${usuario.email}
                         </td>
                         <td class="px-6 py-4">
-                            ${rolUser}
+                            ${dev}
                         </td>
                         <td class="flex py-4 gap-4">
                             <button id="edit-${cont}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</button>
@@ -1195,13 +1204,14 @@ function ControlWeb() {
                         </td>
                     </tr>
             `);
-                $(`#edit-${cont}`).click(function () {
-                    cw.editarUsuario(usuario);
+                    $(`#edit-${cont}`).click(function () {
+                        cw.editarUsuario(usuario);
+                    });
+                    $(`#remove-${cont}`).click(function () {
+                        cw.eliminarUsuario(usuario);
+                    });
+                    cont++;
                 });
-                $(`#remove-${cont}`).click(function () {
-                    cw.eliminarUsuario(usuario);
-                });
-                cont++;
             });
         });
     }
