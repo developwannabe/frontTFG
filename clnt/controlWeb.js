@@ -1161,20 +1161,23 @@ function ControlWeb() {
     }
 
     function tipoUsuario(rol, callback) {
-        let dev = "";
         switch (rol) {
             case "admin":
-                dev = "Administración";
+                callback("Administrador");
+                break;
             case "evaluador":
-                dev = "Equipo Evaluador";
+                callback("Equipo Evaluador");
+                break;
             case "personal":
-                dev = "Personal de Emergencias";
+                callback("Personal de Emergencias");
+                break;
             case "superUsuario":
-                dev = "Super Usuario";
+                callback("Super Usuario");
+                break;
             default:
-                dev = "Rol no definido";
+                callback("Rol no definido");
+                break;
         }
-        callback(dev);
     }
 
     function obtenerUsuarios(query) {
