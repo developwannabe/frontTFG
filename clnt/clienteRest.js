@@ -5,6 +5,21 @@ function ClienteRest() {
         this.url = "https://backtfg-iwr6ji5k5a-ew.a.run.app";
     }
 
+    this.ping = function (callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/ping",
+            success: function () {
+                callback();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+            },
+            contentType: "application/json",
+        });
+    };
+
     this.buscarUsuarios = function (input, tkn, callback) {
         $.ajax({
             type: "POST",
@@ -120,7 +135,7 @@ function ClienteRest() {
         });
     };
 
-    this.finalizarEvaluacion = function(tkn, evalSession, callback){
+    this.finalizarEvaluacion = function (tkn, evalSession, callback) {
         $.ajax({
             type: "GET",
             url: this.url + "/finalizarEvaluacion/" + evalSession,
@@ -136,7 +151,7 @@ function ClienteRest() {
             },
             contentType: "application/json",
         });
-    }
+    };
 
     this.obtenerEvaluaciones = function (tkn, callback) {
         $.ajax({
@@ -154,9 +169,15 @@ function ClienteRest() {
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.evaluarTransicion = function (tkn, evalSession, transicion, boole, callback) {
+    this.evaluarTransicion = function (
+        tkn,
+        evalSession,
+        transicion,
+        boole,
+        callback
+    ) {
         $.ajax({
             type: "GET",
             url: this.url + "/evalImage/" + evalSession + "/" + transicion,
@@ -164,7 +185,7 @@ function ClienteRest() {
                 Authorization: "Bearer " + tkn,
             },
             success: function (data) {
-                if(!boole){
+                if (!boole) {
                     cw.evaluacionRecibida(transicion, data);
                 }
                 callback(data.GPT, data.flood, data.objects);
@@ -301,7 +322,7 @@ function ClienteRest() {
         });
     };
 
-    this.evaluacion = function(tkn, id, callback){
+    this.evaluacion = function (tkn, id, callback) {
         $.ajax({
             type: "GET",
             url: this.url + "/evaluacionRes/" + id,
@@ -317,9 +338,9 @@ function ClienteRest() {
             },
             contentType: "application/json",
         });
-    }
+    };
 
-    this.obtenerLugares = function(tkn, callback){
+    this.obtenerLugares = function (tkn, callback) {
         $.ajax({
             type: "GET",
             url: this.url + "/lugares",
@@ -334,9 +355,9 @@ function ClienteRest() {
                 console.log("Error: " + errorThrown);
             },
         });
-    }
+    };
 
-    this.solicitarRuta = function(tkn, origen, destino, callback){
+    this.solicitarRuta = function (tkn, origen, destino, callback) {
         $.ajax({
             type: "GET",
             url: this.url + "/ruta/" + origen + "/" + destino,
@@ -351,5 +372,5 @@ function ClienteRest() {
                 console.log("Error: " + errorThrown);
             },
         });
-    }
+    };
 }

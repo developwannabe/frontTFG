@@ -1,92 +1,99 @@
 function ControlWeb() {
     this.init = function () {
         $("#au").empty();
-        if ($.cookie("email") == undefined) {
-            $("#au").load("./clnt/login.html", function () {
-                $("#iniSesion").click(function () {
-                    event.preventDefault();
-                    var user = $("#email").val();
-                    var pass = $("#password").val();
-                    let res = comprobarDatos(user, pass);
-                    if (res == null) {
-                        cr.iniciarSesion(user, pass, function (error) {
+        cr.ping(function (data) {
+            if ($.cookie("email") == undefined) {
+                $("#au").load("./clnt/login.html", function () {
+                    $("#iniSesion").click(function () {
+                        event.preventDefault();
+                        var user = $("#email").val();
+                        var pass = $("#password").val();
+                        let res = comprobarDatos(user, pass);
+                        if (res == null) {
+                            cr.iniciarSesion(user, pass, function (error) {
+                                let mensaje;
+                                switch (error) {
+                                    case -1:
+                                        mensaje = "El email no es válido";
+                                        break;
+                                    case -2:
+                                        mensaje =
+                                            "Debes rellenar todos los campos";
+                                        break;
+                                    case -3:
+                                        mensaje = "El usuario no existe";
+                                        break;
+                                    case -4:
+                                        mensaje =
+                                            "La contraseña no es correcta";
+                                        break;
+                                }
+                                cw.errorLogin(mensaje);
+                            });
+                        } else {
                             let mensaje;
-                            switch (error) {
+                            switch (res) {
                                 case -1:
                                     mensaje = "El email no es válido";
                                     break;
                                 case -2:
                                     mensaje = "Debes rellenar todos los campos";
                                     break;
-                                case -3:
-                                    mensaje = "El usuario no existe";
-                                    break;
-                                case -4:
-                                    mensaje = "La contraseña no es correcta";
-                                    break;
                             }
                             cw.errorLogin(mensaje);
-                        });
-                    } else {
-                        let mensaje;
-                        switch (res) {
-                            case -1:
-                                mensaje = "El email no es válido";
-                                break;
-                            case -2:
-                                mensaje = "Debes rellenar todos los campos";
-                                break;
-                        }
-                        cw.errorLogin(mensaje);
-                    }
-                });
-            });
-        } else {
-            $("#au").load("./clnt/menu.html", function () {
-                $("#centerContent").load("./clnt/landing.html", function () {
-                    $("#userName").append($.cookie("email"));
-                    tipoUsuario($.cookie("rol"), function (data) {
-                        $("#userRole").append(data);
-                        $("#cerrarSesion").click(function () {
-                            event.preventDefault();
-                            $.removeCookie("email");
-                            $.removeCookie("tkn");
-                            location.reload();
-                        });
-                        if (
-                            $.cookie("rol") == "admin" ||
-                            $.cookie("rol") == "superUsuario"
-                        ) {
-                            $("#divUsuarios").removeClass("hidden");
-                            $("#usersButton").click(function () {
-                                cw.gestionarUsuarios();
-                            });
-                        }
-                        if (
-                            $.cookie("rol") == "evaluador" ||
-                            $.cookie("rol") == "superUsuario"
-                        ) {
-                            $("#divEvaluar").removeClass("hidden");
-                            $("#newEvalButton").click(function () {
-                                cw.evaluar();
-                            });
-                            $("#oldEvalButton").click(function () {
-                                cw.evaluacionesAnteriores();
-                            });
-                        }
-                        if (
-                            $.cookie("rol") == "personal" ||
-                            $.cookie("rol") == "superUsuario"
-                        ) {
-                            $("#divRutas").removeClass("hidden");
-                            $("#newRouteButton").click(function () {
-                                cw.nuevaRuta();
-                            });
                         }
                     });
                 });
-            });
-        }
+            } else {
+                $("#au").load("./clnt/menu.html", function () {
+                    $("#centerContent").load(
+                        "./clnt/landing.html",
+                        function () {
+                            $("#userName").append($.cookie("email"));
+                            tipoUsuario($.cookie("rol"), function (data) {
+                                $("#userRole").append(data);
+                                $("#cerrarSesion").click(function () {
+                                    event.preventDefault();
+                                    $.removeCookie("email");
+                                    $.removeCookie("tkn");
+                                    location.reload();
+                                });
+                                if (
+                                    $.cookie("rol") == "admin" ||
+                                    $.cookie("rol") == "superUsuario"
+                                ) {
+                                    $("#divUsuarios").removeClass("hidden");
+                                    $("#usersButton").click(function () {
+                                        cw.gestionarUsuarios();
+                                    });
+                                }
+                                if (
+                                    $.cookie("rol") == "evaluador" ||
+                                    $.cookie("rol") == "superUsuario"
+                                ) {
+                                    $("#divEvaluar").removeClass("hidden");
+                                    $("#newEvalButton").click(function () {
+                                        cw.evaluar();
+                                    });
+                                    $("#oldEvalButton").click(function () {
+                                        cw.evaluacionesAnteriores();
+                                    });
+                                }
+                                if (
+                                    $.cookie("rol") == "personal" ||
+                                    $.cookie("rol") == "superUsuario"
+                                ) {
+                                    $("#divRutas").removeClass("hidden");
+                                    $("#newRouteButton").click(function () {
+                                        cw.nuevaRuta();
+                                    });
+                                }
+                            });
+                        }
+                    );
+                });
+            }
+        });
     };
 
     this.nuevaRuta = function () {
@@ -1350,6 +1357,9 @@ function ControlWeb() {
         $("#closeButtonAlert").click(function () {
             $("#alertMenu").hide();
         });
+        setTimeout(function () {
+            $("#alertMenu").hide();
+        }, 5000);
     };
 
     this.eliminarUsuario = function (usuario) {
