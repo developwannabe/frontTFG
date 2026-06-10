@@ -2,7 +2,7 @@ function ClienteRest() {
     if (window.location.hostname === "localhost") {
         this.url = "http://localhost:3000";
     } else {
-        this.url = "https://backtfg-iwr6ji5k5a-ew.a.run.app";
+        this.url = "https://backtfg-246266105145.europe-west1.run.app";
     }
 
     this.ping = function (callback) {
