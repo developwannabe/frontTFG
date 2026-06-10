@@ -914,10 +914,10 @@ function ControlWeb() {
             <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${datosEval.transicion}</h3>
             <div class="w-[700px] dui_diff aspect-[16/9] p-10">
                 <div class="dui_diff-item-1">
-                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgVias/${datosEval.transicion}.jpg" />
+                    <img alt="daisy" src="https://backtfg-246266105145.europe-west1.run.app/image/imgVias/${datosEval.transicion}.jpg" />
                 </div>
                 <div class="dui_diff-item-2">
-                    <img alt="daisy" src="https://backtfg-iwr6ji5k5a-ew.a.run.app/image/imgEval/${datosEval.sessionId}/${datosEval.transicion}.png" />
+                    <img alt="daisy" src="https://backtfg-246266105145.europe-west1.run.app/image/imgEval/${datosEval.sessionId}/${datosEval.transicion}.png" />
                 </div>
                 <div class="dui_diff-resizer"></div>
             </div>
