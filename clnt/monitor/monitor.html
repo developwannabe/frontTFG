@@ -1,0 +1,379 @@
+<div class="animate__animated animate__fadeIn">
+  <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+    <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Monitor Modelo</h1>
+    <p class="mt-2 text-gray-600 dark:text-gray-400">Estado del modelo de visión artificial y del endpoint de inferencia.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="mt-4 border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="monitorTabs">
+      <li class="me-2">
+        <button id="tabModelo" onclick="monitor.switchTab('modelo')"
+          class="inline-block p-4 border-b-2 border-blue-600 text-blue-600 rounded-t-lg dark:border-blue-500 dark:text-blue-500">
+          Métricas del modelo
+        </button>
+      </li>
+      <li class="me-2">
+        <button id="tabEndpoint" onclick="monitor.switchTab('endpoint')"
+          class="inline-block p-4 border-b-2 border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 rounded-t-lg">
+          Rendimiento del endpoint
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Panel Modelo -->
+  <div id="panelModelo" class="mt-4">
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4" id="kpiModelo">
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Total predicciones</div>
+        <div class="dui_stat-value text-gray-900 dark:text-white" id="kpiTotal">
+          <span class="dui_loading dui_loading-dots dui_loading-sm"></span>
+        </div>
+        <div class="dui_stat-desc text-gray-400">últimas 24h</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Confianza media</div>
+        <div class="dui_stat-value text-blue-600 dark:text-blue-400" id="kpiConfianza">
+          <span class="dui_loading dui_loading-dots dui_loading-sm"></span>
+        </div>
+        <div class="dui_stat-desc text-gray-400">sobre todas las clases</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">No transitable</div>
+        <div class="dui_stat-value text-red-500" id="kpiNoTransitable">
+          <span class="dui_loading dui_loading-dots dui_loading-sm"></span>
+        </div>
+        <div class="dui_stat-desc text-gray-400" id="kpiNoTransitablePct">—</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Transitable</div>
+        <div class="dui_stat-value text-green-500" id="kpiTransitable">
+          <span class="dui_loading dui_loading-dots dui_loading-sm"></span>
+        </div>
+        <div class="dui_stat-desc text-gray-400" id="kpiTransitablePct">—</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Requests XAI</div>
+        <div class="dui_stat-value text-cyan-500" id="kpiXai">
+          <span class="dui_loading dui_loading-dots dui_loading-sm"></span>
+        </div>
+        <div class="dui_stat-desc text-gray-400">con Grad-CAM</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Distribución de clases</h3>
+        <div class="flex items-center justify-center h-48">
+          <canvas id="chartDonut"></canvas>
+        </div>
+      </div>
+      <div class="col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Predicciones por hora</h3>
+        <div class="h-48">
+          <canvas id="chartHourly"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla predicciones -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mb-4">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Últimas predicciones</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th class="px-4 py-3">Hora (UTC)</th>
+              <th class="px-4 py-3">Clase</th>
+              <th class="px-4 py-3">Confianza</th>
+              <th class="px-4 py-3">Scores NT / T</th>
+              <th class="px-4 py-3">XAI</th>
+            </tr>
+          </thead>
+          <tbody id="tablaPredicciones">
+            <tr>
+              <td colspan="5" class="px-4 py-8 text-center">
+                <span class="dui_loading dui_loading-dots dui_loading-lg"></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="text-xs text-gray-400 dark:text-gray-500 text-right" id="updatedModelo"></p>
+  </div>
+
+  <!-- Panel Endpoint -->
+  <div id="panelEndpoint" class="mt-4 hidden">
+
+    <!-- KPIs rendimiento -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4" id="kpiEndpoint">
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Latencia media</div>
+        <div class="dui_stat-value text-gray-900 dark:text-white" id="kpiLatMedia">—</div>
+        <div class="dui_stat-desc text-gray-400" id="kpiLatMax">máx —ms</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Total predicciones</div>
+        <div class="dui_stat-value text-blue-600 dark:text-blue-400" id="kpiTotalReqs">—</div>
+        <div class="dui_stat-desc text-gray-400">últimas 24h</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Errores</div>
+        <div class="dui_stat-value" id="kpiErrores">—</div>
+        <div class="dui_stat-desc text-gray-400">últimas 24h</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">CPU media</div>
+        <div class="dui_stat-value text-purple-500" id="kpiCpu">—</div>
+        <div class="dui_stat-desc text-gray-400">uso del contenedor</div>
+      </div>
+      <div class="dui_stat bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div class="dui_stat-title text-gray-500 dark:text-gray-400">Réplicas activas</div>
+        <div class="dui_stat-value text-gray-900 dark:text-white" id="kpiReplicas">—</div>
+        <div class="dui_stat-desc text-gray-400">ahora mismo</div>
+      </div>
+    </div>
+
+    <!-- Charts rendimiento -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Latencia de predicción (ms)</h3>
+        <div class="h-40"><canvas id="chartLatency"></canvas></div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Predicciones por intervalo</h3>
+        <div class="h-40"><canvas id="chartRequests"></canvas></div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Uso de CPU (%)</h3>
+        <div class="h-40"><canvas id="chartCpu"></canvas></div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Errores</h3>
+        <div class="h-40"><canvas id="chartErrors"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Logs TorchServe -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mb-4">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Logs de TorchServe</h3>
+        <span class="dui_badge dui_badge-ghost text-xs" id="logCount">—</span>
+      </div>
+      <div class="overflow-y-auto max-h-72" id="logScroll">
+        <div class="px-4 py-8 text-center text-gray-400">
+          <span class="dui_loading dui_loading-dots dui_loading-lg"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-xs text-gray-400 dark:text-gray-500 text-right" id="updatedEndpoint"></p>
+  </div>
+</div>
+
+<script>
+(function loadChartJs(callback) {
+  if (window.Chart) { callback(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  s.onload = callback;
+  document.head.appendChild(s);
+})(function () {
+
+  var charts = {};
+
+  function destroyChart(id) {
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  }
+
+  function fmtTime(ts) {
+    return new Date(ts * 1000).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  var CHART_OPTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#9ca3af', font: { size: 9 } }, grid: { color: '#374151' } },
+      y: { ticks: { color: '#9ca3af', font: { size: 9 } }, grid: { color: '#374151' } }
+    }
+  };
+
+  window.monitor = {
+    switchTab: function(tab) {
+      var activeBtn  = 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500';
+      var inactiveBtn = 'border-b-2 border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300';
+      if (tab === 'modelo') {
+        document.getElementById('panelModelo').classList.remove('hidden');
+        document.getElementById('panelEndpoint').classList.add('hidden');
+        document.getElementById('tabModelo').className = 'inline-block p-4 rounded-t-lg ' + activeBtn;
+        document.getElementById('tabEndpoint').className = 'inline-block p-4 rounded-t-lg ' + inactiveBtn;
+      } else {
+        document.getElementById('panelModelo').classList.add('hidden');
+        document.getElementById('panelEndpoint').classList.remove('hidden');
+        document.getElementById('tabModelo').className = 'inline-block p-4 rounded-t-lg ' + inactiveBtn;
+        document.getElementById('tabEndpoint').className = 'inline-block p-4 rounded-t-lg ' + activeBtn;
+        monitor.loadEndpoint();
+      }
+    }
+  };
+
+  function loadModelo() {
+    cr.getMetrics($.cookie('tkn'), function(d) {
+      if (!d || d.error) return;
+
+      document.getElementById('kpiTotal').textContent = d.total;
+      document.getElementById('kpiConfianza').textContent = (d.avg_confidence * 100).toFixed(1) + '%';
+      document.getElementById('kpiNoTransitable').textContent = d.no_transitable;
+      document.getElementById('kpiTransitable').textContent = d.transitable;
+      document.getElementById('kpiXai').textContent = d.xai_requests;
+      if (d.total) {
+        document.getElementById('kpiNoTransitablePct').textContent = ((d.no_transitable / d.total) * 100).toFixed(0) + '% del total';
+        document.getElementById('kpiTransitablePct').textContent   = ((d.transitable   / d.total) * 100).toFixed(0) + '% del total';
+      }
+
+      destroyChart('donut');
+      charts['donut'] = new Chart(document.getElementById('chartDonut'), {
+        type: 'doughnut',
+        data: {
+          labels: ['No transitable', 'Transitable'],
+          datasets: [{ data: [d.no_transitable, d.transitable], backgroundColor: ['#ef4444', '#22c55e'], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: true, position: 'bottom', labels: { color: '#9ca3af', font: { size: 11 }, padding: 12 } } },
+          cutout: '65%'
+        }
+      });
+
+      var hours  = Object.keys(d.by_hour);
+      var counts = Object.values(d.by_hour);
+      destroyChart('hourly');
+      charts['hourly'] = new Chart(document.getElementById('chartHourly'), {
+        type: 'bar',
+        data: {
+          labels: hours.map(function(h) { return h.slice(11) + 'h'; }),
+          datasets: [{ data: counts, backgroundColor: 'rgba(59,130,246,0.5)', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }]
+        },
+        options: CHART_OPTS
+      });
+
+      var rows = (d.recent || []).map(function(p) {
+        var badge = p.label === 'transitable'
+          ? '<span class="dui_badge dui_badge-success dui_badge-sm">transitable</span>'
+          : '<span class="dui_badge dui_badge-error dui_badge-sm">no transitable</span>';
+        var xai = p.explain
+          ? '<span class="dui_badge dui_badge-info dui_badge-sm">Grad-CAM</span>'
+          : '—';
+        return '<tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">'
+          + '<td class="px-4 py-2 font-mono text-xs">' + (p.timestamp || '').slice(11, 19) + '</td>'
+          + '<td class="px-4 py-2">' + badge + '</td>'
+          + '<td class="px-4 py-2 font-mono text-xs">' + (p.confidence * 100).toFixed(1) + '%</td>'
+          + '<td class="px-4 py-2 font-mono text-xs">' + (p.score_no_transitable * 100).toFixed(1) + '% / ' + (p.score_transitable * 100).toFixed(1) + '%</td>'
+          + '<td class="px-4 py-2">' + xai + '</td>'
+          + '</tr>';
+      }).join('');
+      document.getElementById('tablaPredicciones').innerHTML = rows || '<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Sin datos</td></tr>';
+
+      document.getElementById('updatedModelo').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
+    });
+  }
+
+  monitor.loadEndpoint = function() {
+    cr.getPerformance($.cookie('tkn'), function(d) {
+      if (!d || d.error) return;
+
+      var latValues = (d.latency || []).map(function(p) { return p.value; });
+      var avgLat    = latValues.length ? (latValues.reduce(function(a,b){return a+b;}, 0) / latValues.length).toFixed(0) : '—';
+      var maxLat    = latValues.length ? Math.max.apply(null, latValues).toFixed(0) : '—';
+      var totalReqs = (d.requests || []).reduce(function(a,b){ return a + b.value; }, 0);
+      var totalErr  = (d.errors   || []).reduce(function(a,b){ return a + b.value; }, 0);
+      var lastRep   = d.replicas && d.replicas.length ? d.replicas[d.replicas.length - 1].value : '—';
+      var avgCpu    = d.cpu && d.cpu.length ? (d.cpu.reduce(function(a,b){return a+b.value;}, 0) / d.cpu.length * 100).toFixed(1) : '—';
+
+      document.getElementById('kpiLatMedia').textContent = avgLat + 'ms';
+      document.getElementById('kpiLatMax').textContent   = 'máx ' + maxLat + 'ms';
+      document.getElementById('kpiTotalReqs').textContent = totalReqs;
+      document.getElementById('kpiErrores').textContent   = totalErr;
+      document.getElementById('kpiErrores').className     = 'dui_stat-value ' + (totalErr > 0 ? 'text-red-500' : 'text-green-500');
+      document.getElementById('kpiCpu').textContent       = avgCpu + '%';
+      document.getElementById('kpiReplicas').textContent  = lastRep;
+
+      function lineChart(id, data, color) {
+        destroyChart(id);
+        charts[id] = new Chart(document.getElementById('chart' + id.charAt(0).toUpperCase() + id.slice(1)), {
+          type: 'line',
+          data: {
+            labels: data.map(function(p) { return fmtTime(p.time); }),
+            datasets: [{ data: data.map(function(p) { return p.value; }), borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.3, pointRadius: 1, borderWidth: 1.5 }]
+          },
+          options: CHART_OPTS
+        });
+      }
+
+      lineChart('latency',  d.latency  || [], '#3b82f6');
+      lineChart('requests', d.requests || [], '#06b6d4');
+      lineChart('errors',   d.errors   || [], '#ef4444');
+
+      var cpuNorm = (d.cpu || []).map(function(p) { return { time: p.time, value: p.value * 100 }; });
+      lineChart('cpu', cpuNorm, '#a855f7');
+
+      document.getElementById('updatedEndpoint').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
+    });
+
+    cr.getTorchserveLogs($.cookie('tkn'), function(logs) {
+      if (!logs || !Array.isArray(logs)) return;
+      document.getElementById('logCount').textContent = logs.length + ' entradas';
+
+      function logType(msg) {
+        if (msg.indexOf('MODEL_LOG')  !== -1) return 'MODEL';
+        if (msg.indexOf('ACCESS_LOG') !== -1) return 'ACCESS';
+        if (msg.indexOf('TS_METRICS') !== -1) return 'METRICS';
+        if (msg.indexOf('ERROR')      !== -1) return '<span class="text-red-400">ERROR</span>';
+        return 'INFO';
+      }
+
+      function logContent(msg) {
+        var parts = msg.split(' - ');
+        return parts.length > 1 ? parts.slice(1).join(' - ').trim() : msg.trim();
+      }
+
+      var html = logs.map(function(l) {
+        var ts  = (l.timestamp || '').slice(0, 19).replace('T', ' ');
+        var typ = logType(l.message || '');
+        var cnt = logContent(l.message || '');
+        return '<div class="flex gap-3 px-4 py-1.5 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 font-mono text-xs">'
+          + '<span class="text-gray-400 shrink-0 w-36">' + ts + '</span>'
+          + '<span class="text-blue-400 shrink-0 w-16">' + typ + '</span>'
+          + '<span class="text-gray-600 dark:text-gray-300 truncate">' + cnt + '</span>'
+          + '</div>';
+      }).join('');
+
+      document.getElementById('logScroll').innerHTML = html || '<div class="px-4 py-6 text-center text-gray-400">Sin logs disponibles</div>';
+    });
+  };
+
+  loadModelo();
+  window._monitorIntervalModelo   = setInterval(loadModelo, 30000);
+  window._monitorIntervalEndpoint = setInterval(function() {
+    if (!document.getElementById('panelEndpoint').classList.contains('hidden')) {
+      monitor.loadEndpoint();
+    }
+  }, 30000);
+
+  $(document).one('click', '[id^="newEvalButton"], [id^="usersButton"], [id^="newRouteButton"], [id^="oldEvalButton"]', function() {
+    clearInterval(window._monitorIntervalModelo);
+    clearInterval(window._monitorIntervalEndpoint);
+  });
+
+});
+</script>

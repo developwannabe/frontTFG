@@ -66,6 +66,10 @@ function ControlWeb() {
                                     $("#usersButton").click(function () {
                                         cw.gestionarUsuarios();
                                     });
+                                    $("#divMonitor").removeClass("hidden");
+                                    $("#monitorButton").click(function() {
+                                        cw.monitor();
+                                    });
                                 }
                                 if (
                                     $.cookie("rol") == "evaluador" ||
@@ -1411,5 +1415,8 @@ function ControlWeb() {
         } else {
             submenu.classList.add("hidden");
         }
+    };
+    this.monitor = function() {
+        $("#centerContent").load("./clnt/monitor/monitor.html", function() {});
     };
 }

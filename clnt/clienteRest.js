@@ -373,4 +373,61 @@ function ClienteRest() {
             },
         });
     };
+
+    this.getMetrics = function(tkn, callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/api/metrics",
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function(data) {
+                callback(data);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+                callback(null);
+            },
+            contentType: "application/json",
+        });
+    };
+    
+    this.getPerformance = function(tkn, callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/api/performance",
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function(data) {
+                callback(data);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+                callback(null);
+            },
+            contentType: "application/json",
+        });
+    };
+    
+    this.getTorchserveLogs = function(tkn, callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/api/torchserve_logs",
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function(data) {
+                callback(data);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+                callback(null);
+            },
+            contentType: "application/json",
+        });
+    };
 }
