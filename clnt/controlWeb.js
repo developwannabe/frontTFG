@@ -326,6 +326,7 @@ function ControlWeb() {
                         fis: datos.result.evaluacion[keys[i]].fis,
                         transitabilidad:
                             datos.result.evaluacion[keys[i]].transitabilidad,
+                        cv: datos.result.evaluacion[keys[i]].gpt.cv,
                     });
                 }
                 for (let i = 0; i < keys.length; i++) {
@@ -338,6 +339,7 @@ function ControlWeb() {
                         floodGPT: datos.result.evaluacion[keys[i]].gpt.flood,
                         objectsGPT:
                             datos.result.evaluacion[keys[i]].gpt.objects,
+                        cv: datos.result.evaluacion[keys[i]].gpt.cv,
                         sessionId: id,
                     });
                     $("div.barraEval").remove();
@@ -375,11 +377,21 @@ function ControlWeb() {
                 }
                 cw.tablaTransicionesT(data, function () {
                     for (let i = 0; i < keys.length; i++) {
+                        const cv = datos.result.evaluacion[keys[i]].gpt.cv;
+                        const valorBadgeClass =
+                            cv && cv.label
+                                ? cv.label === "transitable"
+                                    ? "dui_badge-success"
+                                    : "dui_badge-error"
+                                : "";
+                        const valor = `${
+                            datos.result.evaluacion[keys[i]].flood
+                        } / ${datos.result.evaluacion[keys[i]].objects}`;
                         $(`#valor${keys[i].slice(5)}`).empty();
                         $(`#valor${keys[i].slice(5)}`).append(
-                            datos.result.evaluacion[keys[i]].flood +
-                                " / " +
-                                datos.result.evaluacion[keys[i]].objects
+                            valorBadgeClass
+                                ? `<span class="dui_badge ${valorBadgeClass}">${valor}</span>`
+                                : valor
                         );
                         $(`#estado${keys[i].slice(5)}`).empty();
                         $(`#estado${keys[i].slice(5)}`).append(
@@ -492,6 +504,7 @@ function ControlWeb() {
                             objects: objects,
                             floodGPT: trn.flood,
                             objectsGPT: trn.objects,
+                            cv: trn.cv,
                             sessionId: $.cookie("evalSession"),
                         });
                         $(`#tarjeta${tran[0]}`).removeClass("hidden");
@@ -508,6 +521,7 @@ function ControlWeb() {
                                         objects: objects2,
                                         floodGPT: trn2.flood,
                                         objectsGPT: trn2.objects,
+                                        cv: trn2.cv,
                                         sessionId: $.cookie("evalSession"),
                                     });
                                 }
@@ -559,6 +573,7 @@ function ControlWeb() {
                             fis: data.evaluacion[keys[i]].fis,
                             transitabilidad:
                                 data.evaluacion[keys[i]].transitabilidad,
+                            cv: data.evaluacion[keys[i]].gpt.cv,
                         });
                     }
                     cw.tablaTransicionesT(datos, function () {
@@ -617,14 +632,28 @@ function ControlWeb() {
                                             ).append("Revisada");
                                         }
                                     );
-                                    $(`#valor${keys[i].slice(5)}`).text(
-                                        `${data.evaluacion[keys[i]].flood}/${
-                                            data.evaluacion[keys[i]].objects
-                                        } => ${$(
-                                            `#transitabilidadInput${keys[
-                                                i
-                                            ].slice(5)}`
-                                        ).val()}`
+                                    const cvRevisar =
+                                        data.evaluacion[keys[i]].gpt.cv;
+                                    const valorBadgeClassRevisar =
+                                        cvRevisar && cvRevisar.label
+                                            ? cvRevisar.label === "transitable"
+                                                ? "dui_badge-success"
+                                                : "dui_badge-error"
+                                            : "";
+                                    const valorRevisar = `${
+                                        data.evaluacion[keys[i]].flood
+                                    }/${
+                                        data.evaluacion[keys[i]].objects
+                                    } => ${$(
+                                        `#transitabilidadInput${keys[
+                                            i
+                                        ].slice(5)}`
+                                    ).val()}`;
+                                    $(`#valor${keys[i].slice(5)}`).empty();
+                                    $(`#valor${keys[i].slice(5)}`).append(
+                                        valorBadgeClassRevisar
+                                            ? `<span class="dui_badge ${valorBadgeClassRevisar}">${valorRevisar}</span>`
+                                            : valorRevisar
                                     );
                                 }
                             );
@@ -662,7 +691,7 @@ function ControlWeb() {
                                 <div>
                                     <span class="font-semibold text-gray-900 dark:text-white">Recomendación: </span>${
                                         data.evaluacion[keys[i]].fis
-                                    }    
+                                    }
                                 </div>
                             `);
                             $(`#transitabilidadInput${keys[i].slice(5)}`).on(
@@ -797,14 +826,29 @@ function ControlWeb() {
         $(`#valor${transicion}`).empty();
         $("#tablaEvaluacioness").show();
         $("#evaluarTransitabilidad").show();
+        let valorBadgeClass = "";
+        if (data.GPT && data.GPT.cv && data.GPT.cv.label) {
+            valorBadgeClass =
+                data.GPT.cv.label === "transitable"
+                    ? "dui_badge-success"
+                    : "dui_badge-error";
+        }
         if (data.flood == null && data.objects == null) {
+            const valor = `${data.GPT["flood"]}/${data.GPT["objects"]}`;
             $(`#valor${transicion}`).append(
-                data.GPT["flood"] + "/" + data.GPT["objects"]
+                valorBadgeClass
+                    ? `<span class="dui_badge ${valorBadgeClass}">${valor}</span>`
+                    : valor
             );
             $(`#estado${transicion}`).empty();
             $(`#estado${transicion}`).append("Sin evaluar");
         } else {
-            $(`#valor${transicion}`).append(data.flood + "/" + data.objects);
+            const valor = `${data.flood}/${data.objects}`;
+            $(`#valor${transicion}`).append(
+                valorBadgeClass
+                    ? `<span class="dui_badge ${valorBadgeClass}">${valor}</span>`
+                    : valor
+            );
             $(`#estado${transicion}`).empty();
             $(`#estado${transicion}`).append("Evaluado");
         }
@@ -834,6 +878,16 @@ function ControlWeb() {
                 tr = element.fis;
                 str = "Sin revisar";
             }
+            let valorBadgeClass = "";
+            if (element.cv && element.cv.label) {
+                valorBadgeClass =
+                    element.cv.label === "transitable"
+                        ? "dui_badge-success"
+                        : "dui_badge-error";
+            }
+            const valorHtml = valorBadgeClass
+                ? `<span class="dui_badge ${valorBadgeClass}">${element.flood}/${element.objects}</span> => ${tr}`
+                : `${element.flood}/${element.objects} => ${tr}`;
             $("#tablaTransiciones").append(`
             <tr
                             class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
@@ -846,7 +900,7 @@ function ControlWeb() {
                                 ${element.id}
                             </button>
                             </th>
-                            <td id="valor${element.id}" class="px-6 py-4 text-center">${element.flood}/${element.objects} => ${tr}</td>
+                            <td id="valor${element.id}" class="px-6 py-4 text-center">${valorHtml}</td>
                             <td id="estado${element.id}" class="px-6 py-4 text-center">
                                 ${str}
                             </td>
@@ -902,8 +956,18 @@ function ControlWeb() {
             floodBarra = datosEval.flood;
             $(`#estado${datosEval.transicion}`).empty();
             $(`#estado${datosEval.transicion}`).append("Evaluado");
-            $(`#valor${datosEval.transicion}`).text(
-                datosEval.flood + "/" + datosEval.objects
+            const valorBadgeClassInit =
+                datosEval.cv && datosEval.cv.label
+                    ? datosEval.cv.label === "transitable"
+                        ? "dui_badge-success"
+                        : "dui_badge-error"
+                    : "";
+            const valorInit = `${datosEval.flood}/${datosEval.objects}`;
+            $(`#valor${datosEval.transicion}`).empty();
+            $(`#valor${datosEval.transicion}`).append(
+                valorBadgeClassInit
+                    ? `<span class="dui_badge ${valorBadgeClassInit}">${valorInit}</span>`
+                    : valorInit
             );
         } else {
             floodBarra = datosEval.floodGPT;
@@ -912,6 +976,19 @@ function ControlWeb() {
             objectsBarra = datosEval.objects;
         } else {
             objectsBarra = datosEval.objectsGPT;
+        }
+        let cvBadge = "";
+        if (datosEval.cv && datosEval.cv.label) {
+            const esTransitable = datosEval.cv.label === "transitable";
+            const cvProb = Math.round((datosEval.cv.probability || 0) * 100);
+            const cvTexto = esTransitable ? "Transitable" : "No Transitable";
+            cvBadge = `
+                <div class="dui_badge ${
+                    esTransitable ? "dui_badge-success" : "dui_badge-error"
+                } dui_badge-lg gap-2">
+                    ${cvTexto} (${cvProb}%)
+                </div>
+            `;
         }
         $("#dtarjetaEval").append(`
         <div id="tarjeta${datosEval.transicion}" class="hidden dui_card w-fit bg-base-150 shadow-xl flex flex-col items-center">
@@ -930,6 +1007,7 @@ function ControlWeb() {
                     <span class="font-semibold text-gray-900 dark:text-white">Estimación (IA)</span>
                     <span class="text-gray-500 dark:text-gray-400">Flood: ${datosEval.floodGPT}</span>
                     <span class="text-gray-500 dark:text-gray-400">Objetos: ${datosEval.objectsGPT}</span>
+                    ${cvBadge}
                 </div>
                 <div id="evalF${datosEval.transicion}" class="hidden flex flex-col gap-4 p-10">
                 </div>
@@ -968,10 +1046,20 @@ function ControlWeb() {
         });
 
         $(`#enviarVal${datosEval.transicion}`).click(function () {
-            $(`#valor${datosEval.transicion}`).text(
-                $(`#floodInput${datosEval.transicion}`).val() +
-                    "/" +
-                    $(`#objectsInput${datosEval.transicion}`).val()
+            const valorBadgeClass =
+                datosEval.cv && datosEval.cv.label
+                    ? datosEval.cv.label === "transitable"
+                        ? "dui_badge-success"
+                        : "dui_badge-error"
+                    : "";
+            const valor = `${$(
+                `#floodInput${datosEval.transicion}`
+            ).val()}/${$(`#objectsInput${datosEval.transicion}`).val()}`;
+            $(`#valor${datosEval.transicion}`).empty();
+            $(`#valor${datosEval.transicion}`).append(
+                valorBadgeClass
+                    ? `<span class="dui_badge ${valorBadgeClass}">${valor}</span>`
+                    : valor
             );
             cr.enviarEvaluacion(
                 $.cookie("tkn"),
