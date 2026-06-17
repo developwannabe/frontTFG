@@ -886,7 +886,7 @@ function ControlWeb() {
                         : "dui_badge-error";
             }
             const valorHtml = valorBadgeClass
-                ? `<span class="dui_badge ${valorBadgeClass}">${element.flood}/${element.objects}</span> => ${tr}`
+                ? `<span class="dui_badge ${valorBadgeClass}">${element.flood}/${element.objects} => ${tr}</span>`
                 : `${element.flood}/${element.objects} => ${tr}`;
             $("#tablaTransiciones").append(`
             <tr
