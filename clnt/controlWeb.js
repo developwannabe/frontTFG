@@ -1001,6 +1001,9 @@ function ControlWeb() {
                     <span class="text-gray-500 dark:text-gray-400">Flood: ${datosEval.floodGPT}</span>
                     <span class="text-gray-500 dark:text-gray-400">Objetos: ${datosEval.objectsGPT}</span>
                     ${cvBadge}
+                    <button id="explainBtn${datosEval.transicion}" type="button" class="mt-2 text-xs font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:ring-cyan-300 rounded-lg px-3 py-1.5 dark:bg-cyan-500 dark:hover:bg-cyan-600">
+                        Explicar IA
+                    </button>
                 </div>
                 <div id="evalF${datosEval.transicion}" class="hidden flex flex-col gap-4 p-10">
                 </div>
@@ -1023,6 +1026,66 @@ function ControlWeb() {
             </div>
         </div>
         `);
+
+        $(`#explainBtn${datosEval.transicion}`).click(function () {
+            const tran = datosEval.transicion;
+            const imgOriginal = `https://backtfg-246266105145.europe-west1.run.app/image/imgVias/${tran}.jpg`;
+            $("#explainModal").remove();
+            $("body").append(`
+                <div id="explainModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6">
+                        <button id="explainModalClose" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-white text-xl font-bold">&times;</button>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Explicabilidad IA — Transición ${tran}</h3>
+                        <div id="explainModalBody" class="flex flex-col items-center gap-4">
+                            <span class="dui_loading dui_loading-dots dui_loading-lg"></span>
+                        </div>
+                    </div>
+                </div>
+            `);
+            $("#explainModalClose").click(function () { $("#explainModal").remove(); });
+
+            cr.explain($.cookie("tkn"), tran, function (data) {
+                if (!data || data.error) {
+                    $("#explainModalBody").html('<p class="text-red-500">Error al obtener la explicación.</p>');
+                    return;
+                }
+                const esTransitable = data.label === "transitable";
+                const badgeClass = esTransitable ? "dui_badge-success" : "dui_badge-error";
+                const labelText  = esTransitable ? "Transitable" : "No Transitable";
+                const pct        = Math.round((data.probability || 0) * 100);
+                const ntPct      = Math.round(((data.scores || {}).no_transitable || 0) * 100);
+                const tPct       = Math.round(((data.scores || {}).transitable    || 0) * 100);
+                const heatmapSrc = data.heatmap ? `data:image/jpeg;base64,${data.heatmap}` : null;
+
+                let bodyHtml = `<span class="dui_badge ${badgeClass} dui_badge-lg">${labelText} (${pct}%)</span>`;
+
+                if (heatmapSrc) {
+                    bodyHtml += `
+                        <div class="w-full grid grid-cols-2 gap-4">
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="text-xs text-gray-500">Original</span>
+                                <img src="${imgOriginal}" alt="original" class="rounded-lg w-full object-cover" />
+                            </div>
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="text-xs text-gray-500">Grad-CAM</span>
+                                <img src="${heatmapSrc}" alt="Grad-CAM" class="rounded-lg w-full object-cover" />
+                            </div>
+                        </div>`;
+                } else {
+                    bodyHtml += '<p class="text-gray-400 text-sm">Grad-CAM no disponible.</p>';
+                }
+
+                bodyHtml += `
+                    <div class="w-full flex flex-col gap-1 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-500">No transitable</span><span class="font-mono">${ntPct}%</span></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-red-500 h-2 rounded-full" style="width:${ntPct}%"></div></div>
+                        <div class="flex justify-between mt-1"><span class="text-gray-500">Transitable</span><span class="font-mono">${tPct}%</span></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-green-500 h-2 rounded-full" style="width:${tPct}%"></div></div>
+                    </div>`;
+
+                $("#explainModalBody").html(bodyHtml);
+            });
+        });
 
         $(`#floodInput${datosEval.transicion}`).on("input", function () {
             $(`#floodEval${datosEval.transicion}`).text(this.value);

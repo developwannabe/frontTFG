@@ -412,6 +412,25 @@ function ClienteRest() {
         });
     };
     
+    this.explain = function(tkn, transicion, callback) {
+        $.ajax({
+            type: "GET",
+            url: this.url + "/explain/" + transicion,
+            headers: {
+                Authorization: "Bearer " + tkn,
+            },
+            success: function(data) {
+                callback(data);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.log("Status: " + textStatus);
+                console.log("Error: " + errorThrown);
+                callback(null);
+            },
+            contentType: "application/json",
+        });
+    };
+
     this.getTorchserveLogs = function(tkn, callback) {
         $.ajax({
             type: "GET",
