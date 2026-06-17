@@ -1,4 +1,12 @@
 function ControlWeb() {
+    function fisaBadgeClass(val) {
+        const v = parseFloat(val);
+        if (isNaN(v)) return "";
+        if (v < 3) return "dui_badge-success";
+        if (v < 7) return "dui_badge-warning";
+        return "dui_badge-error";
+    }
+
     this.init = function () {
         $("#au").empty();
         cr.ping(function (data) {
@@ -172,9 +180,9 @@ function ControlWeb() {
                                     );
                                     $("#etaRuta").empty();
                                     $("#etaRuta").append(
-                                        "Tiempo estimado de llegada: " +
-                                            data.eta +
-                                            " minutos."
+                                        data.eta != null
+                                            ? "Tiempo estimado de llegada: " + data.eta + " minutos."
+                                            : ""
                                     );
                                     $("#datosRuta").removeClass("hidden");
                                 } else {
@@ -377,16 +385,12 @@ function ControlWeb() {
                 }
                 cw.tablaTransicionesT(data, function () {
                     for (let i = 0; i < keys.length; i++) {
-                        const cv = datos.result.evaluacion[keys[i]].gpt.cv;
-                        const valorBadgeClass =
-                            cv && cv.label
-                                ? cv.label === "transitable"
-                                    ? "dui_badge-success"
-                                    : "dui_badge-error"
-                                : "";
+                        const _t = datos.result.evaluacion[keys[i]].transitabilidad;
+                        const tr = _t != null ? _t : datos.result.evaluacion[keys[i]].fis;
+                        const valorBadgeClass = fisaBadgeClass(tr);
                         const valor = `${
                             datos.result.evaluacion[keys[i]].flood
-                        } / ${datos.result.evaluacion[keys[i]].objects}`;
+                        } / ${datos.result.evaluacion[keys[i]].objects} => ${tr}`;
                         $(`#valor${keys[i].slice(5)}`).empty();
                         $(`#valor${keys[i].slice(5)}`).append(
                             valorBadgeClass
@@ -395,7 +399,9 @@ function ControlWeb() {
                         );
                         $(`#estado${keys[i].slice(5)}`).empty();
                         $(`#estado${keys[i].slice(5)}`).append(
-                            datos.result.evaluacion[keys[i]].transitabilidad
+                            _t != null
+                                ? "Revisada"
+                                : "Sin revisar"
                         );
                     }
                 });
@@ -632,23 +638,16 @@ function ControlWeb() {
                                             ).append("Revisada");
                                         }
                                     );
-                                    const cvRevisar =
-                                        data.evaluacion[keys[i]].gpt.cv;
+                                    const transitabilidadVal = $(
+                                        `#transitabilidadInput${keys[i].slice(5)}`
+                                    ).val();
                                     const valorBadgeClassRevisar =
-                                        cvRevisar && cvRevisar.label
-                                            ? cvRevisar.label === "transitable"
-                                                ? "dui_badge-success"
-                                                : "dui_badge-error"
-                                            : "";
+                                        fisaBadgeClass(transitabilidadVal);
                                     const valorRevisar = `${
                                         data.evaluacion[keys[i]].flood
                                     }/${
                                         data.evaluacion[keys[i]].objects
-                                    } => ${$(
-                                        `#transitabilidadInput${keys[
-                                            i
-                                        ].slice(5)}`
-                                    ).val()}`;
+                                    } => ${transitabilidadVal}`;
                                     $(`#valor${keys[i].slice(5)}`).empty();
                                     $(`#valor${keys[i].slice(5)}`).append(
                                         valorBadgeClassRevisar
@@ -672,7 +671,7 @@ function ControlWeb() {
                                 "hidden"
                             );
                             let valorBarra;
-                            if (data.evaluacion[keys[i]].transitabilidad) {
+                            if (data.evaluacion[keys[i]].transitabilidad != null) {
                                 valorBarra =
                                     data.evaluacion[keys[i]].transitabilidad;
                             } else {
@@ -726,7 +725,7 @@ function ControlWeb() {
                 let ret = true;
                 let k = Object.keys(data.evaluacion);
                 for (let i = 0; i < k.length; i++) {
-                    if (!data.evaluacion[k[i]].transitabilidad) {
+                    if (data.evaluacion[k[i]].transitabilidad == null) {
                         ret = false;
                     }
                 }
@@ -871,20 +870,14 @@ function ControlWeb() {
         let tr;
         let str;
         data.forEach((element) => {
-            if (element.transitabilidad) {
+            if (element.transitabilidad != null) {
                 tr = element.transitabilidad;
                 str = "Revisada";
             } else {
                 tr = element.fis;
                 str = "Sin revisar";
             }
-            let valorBadgeClass = "";
-            if (element.cv && element.cv.label) {
-                valorBadgeClass =
-                    element.cv.label === "transitable"
-                        ? "dui_badge-success"
-                        : "dui_badge-error";
-            }
+            const valorBadgeClass = fisaBadgeClass(tr);
             const valorHtml = valorBadgeClass
                 ? `<span class="dui_badge ${valorBadgeClass}">${element.flood}/${element.objects} => ${tr}</span>`
                 : `${element.flood}/${element.objects} => ${tr}`;
@@ -894,14 +887,14 @@ function ControlWeb() {
                         >
                             <th
                                 scope="row"
-                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white w-28"
                             >
                             <button id="mostrar${element.id}" type="button" class="py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center">
                                 ${element.id}
                             </button>
                             </th>
-                            <td id="valor${element.id}" class="px-6 py-4 text-center">${valorHtml}</td>
-                            <td id="estado${element.id}" class="px-6 py-4 text-center">
+                            <td id="valor${element.id}" class="px-6 py-4 text-center w-44">${valorHtml}</td>
+                            <td id="estado${element.id}" class="px-6 py-4 text-center w-28">
                                 ${str}
                             </td>
                         </tr>
@@ -926,7 +919,7 @@ function ControlWeb() {
                         >
                             <th
                                 scope="row"
-                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white w-28"
                             >
                             <button id="mostrar${element}" type="button" class="py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center">
                                 <svg aria-hidden="true" role="status" class="inline w-4 h-4 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -936,8 +929,8 @@ function ControlWeb() {
                                 ${element}
                             </button>
                             </th>
-                            <td id="valor${element}" class="px-6 py-4 text-center"></td>
-                            <td id="estado${element}" class="px-6 py-4 text-center">
+                            <td id="valor${element}" class="px-6 py-4 text-center w-44"></td>
+                            <td id="estado${element}" class="px-6 py-4 text-center w-28">
                                 <span
                                     class="dui_loading dui_loading-dots dui_loading-lg"
                                 ></span>

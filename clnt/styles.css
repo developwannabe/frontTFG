@@ -2401,6 +2401,14 @@ html {
   color: var(--fallback-suc,oklch(var(--suc)/var(--tw-text-opacity)));
 }
 
+.dui_badge-warning {
+  border-color: transparent;
+  --tw-bg-opacity: 1;
+  background-color: var(--fallback-wa,oklch(var(--wa)/var(--tw-bg-opacity)));
+  --tw-text-opacity: 1;
+  color: var(--fallback-wac,oklch(var(--wac)/var(--tw-text-opacity)));
+}
+
 .dui_badge-error {
   border-color: transparent;
   --tw-bg-opacity: 1;
@@ -2426,6 +2434,11 @@ html {
 .dui_badge-outline.dui_badge-success {
   --tw-text-opacity: 1;
   color: var(--fallback-su,oklch(var(--su)/var(--tw-text-opacity)));
+}
+
+.dui_badge-outline.dui_badge-warning {
+  --tw-text-opacity: 1;
+  color: var(--fallback-wa,oklch(var(--wa)/var(--tw-text-opacity)));
 }
 
 .dui_badge-outline.dui_badge-error {
@@ -3059,6 +3072,14 @@ html {
   width: 100%;
 }
 
+.w-28 {
+  width: 7rem;
+}
+
+.w-44 {
+  width: 11rem;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -3085,6 +3106,10 @@ html {
 
 .flex-grow {
   flex-grow: 1;
+}
+
+.table-fixed {
+  table-layout: fixed;
 }
 
 .-translate-x-full {
