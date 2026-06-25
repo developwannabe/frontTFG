@@ -986,14 +986,20 @@ function ControlWeb() {
         $("#dtarjetaEval").append(`
         <div id="tarjeta${datosEval.transicion}" class="hidden dui_card w-fit bg-base-150 shadow-xl flex flex-col items-center">
             <h3 class="font-semibold text-gray-900 dark:text-white p-8">Transición ${datosEval.transicion}</h3>
-            <div class="w-[700px] dui_diff aspect-[16/9] p-10">
-                <div class="dui_diff-item-1">
-                    <img alt="daisy" src="https://backtfg-246266105145.europe-west1.run.app/image/imgVias/${datosEval.transicion}.jpg" />
+            <div id="imgCompare${datosEval.transicion}" class="img-compare" style="width:700px;aspect-ratio:16/9;">
+                <div class="img-compare-base">
+                    <img alt="imagen vía" src="https://backtfg-246266105145.europe-west1.run.app/image/imgVias/${datosEval.transicion}.jpg" />
                 </div>
-                <div class="dui_diff-item-2">
-                    <img alt="daisy" src="https://backtfg-246266105145.europe-west1.run.app/image/imgEval/${datosEval.sessionId}/${datosEval.transicion}.png" />
+                <div class="img-compare-overlay" style="width:50%;">
+                    <img alt="imagen evaluada" src="https://backtfg-246266105145.europe-west1.run.app/image/imgEval/${datosEval.sessionId}/${datosEval.transicion}.png" />
                 </div>
-                <div class="dui_diff-resizer"></div>
+                <div class="img-compare-handle" style="left:50%;">
+                    <div class="img-compare-handle-line"></div>
+                    <div class="img-compare-handle-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                    </div>
+                </div>
             </div>
             <div class="flex flex-row items-center">
                 <div class="flex flex-col gap-4 p-10">
@@ -1100,6 +1106,29 @@ function ControlWeb() {
             $(`#estado${datosEval.transicion}`).empty();
             $(`#estado${datosEval.transicion}`).append("Modificado");
         });
+
+        (function () {
+            const container = document.getElementById(`imgCompare${datosEval.transicion}`);
+            const overlay = container.querySelector(".img-compare-overlay");
+            const handle = container.querySelector(".img-compare-handle");
+            let dragging = false;
+
+            function setPosition(clientX) {
+                const rect = container.getBoundingClientRect();
+                const pct = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+                const pctStr = (pct * 100) + "%";
+                overlay.style.width = pctStr;
+                handle.style.left = pctStr;
+            }
+
+            handle.addEventListener("mousedown", function (e) { dragging = true; e.preventDefault(); });
+            document.addEventListener("mousemove", function (e) { if (dragging) setPosition(e.clientX); });
+            document.addEventListener("mouseup", function () { dragging = false; });
+
+            handle.addEventListener("touchstart", function (e) { dragging = true; e.preventDefault(); }, { passive: false });
+            document.addEventListener("touchmove", function (e) { if (dragging) setPosition(e.touches[0].clientX); }, { passive: true });
+            document.addEventListener("touchend", function () { dragging = false; });
+        })();
 
         $(`#enviarVal${datosEval.transicion}`).click(function () {
             const valorBadgeClass =

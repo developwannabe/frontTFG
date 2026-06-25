@@ -3,3 +3,82 @@
 @tailwind components;
 @tailwind utilities;
 @import 'animate.css';
+
+@layer components {
+  .img-compare {
+    position: relative;
+    overflow: hidden;
+    cursor: col-resize;
+    user-select: none;
+  }
+
+  .img-compare-base,
+  .img-compare-overlay {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  .img-compare-overlay {
+    overflow: hidden;
+    width: 50%;
+  }
+
+  .img-compare-base img,
+  .img-compare-overlay img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+    display: block;
+  }
+
+  .img-compare-overlay img {
+    width: 700px;
+    max-width: none;
+  }
+
+  .img-compare-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .img-compare-handle-line {
+    flex: 1;
+    width: 2px;
+    background: white;
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+  }
+
+  .img-compare-handle-circle {
+    pointer-events: all;
+    cursor: col-resize;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .img-compare-handle-circle svg {
+    width: 1rem;
+    height: 1rem;
+    color: #374151;
+  }
+}
